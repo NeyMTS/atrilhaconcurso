@@ -883,6 +883,16 @@ export function StudyView() {
   const [minutes, setMinutes] = useState('');
   const [tab, setTab] = useState('sessions');
 
+  // Prefill from the schedule ("Estudar" button) once records are loaded.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const pc = params.get('cid'), ps = params.get('sid');
+    if (pc && data.items.some((i) => i.id === pc)) {
+      setCid(pc);
+      if (ps && data.items.some((i) => i.id === ps)) setSid(ps);
+    }
+  }, [data.items.length]);
+
   const contests = data.items.filter(
     (item) =>
       item.kind === 'contest' &&

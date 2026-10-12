@@ -3,6 +3,7 @@ import { useState, type ReactNode } from 'react';
 import { Link, useLocation } from '@tanstack/react-router';
 import {
   BookOpen,
+  CalendarDays,
   House,
   Timer,
   ChartNoAxesCombined,
@@ -23,6 +24,7 @@ import { AccountDialog } from './study-views';
 const nav = [
   { to: '/', label: 'Início', icon: House },
   { to: '/estudar', label: 'Estudar', icon: Timer },
+  { to: '/cronograma', label: 'Cronograma', icon: CalendarDays },
   { to: '/edital', label: 'Edital', icon: BookOpen },
   { to: '/evolucao', label: 'Evolução', icon: ChartNoAxesCombined },
 ] as const;
