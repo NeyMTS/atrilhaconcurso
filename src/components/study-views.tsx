@@ -1756,6 +1756,7 @@ export function EditalView() {
 
           <section className="edital-info">
             <div>
+              <InstitutionMark agency={contest?.payload.agency || contest?.payload.name || ''} />
               <h2>{contest?.payload.name}</h2>
 
               <p>

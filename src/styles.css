@@ -1523,3 +1523,31 @@ h1 {
   .timer-buttons button { font-size: 12px; padding-inline: 10px; }
   .modal-footer { padding-inline: 0; }
 }
+.edital-toolbar { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr) auto; align-items: end; gap: 14px; margin: 22px 0; }
+.edital-info { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 20px; padding: 20px 0; border-block: 1px solid var(--border); }
+.edital-info h2 { margin: 0 0 8px; font-size: 20px; }
+.edital-info p { margin: 8px 0; color: var(--muted-foreground); font-size: 12px; }
+.edital-info a, .catalog-card .card-actions a { display: inline-flex; gap: 6px; align-items: center; font-size: 12px; color: var(--primary); }
+.subject-list { display: grid; gap: 12px; }
+.subject-header { display: grid; grid-template-columns: minmax(0,1fr) auto; }
+.subject-header > div { display: flex; flex-shrink: 0; }
+.subject-toggle { display: grid; grid-template-columns: auto auto minmax(0,1fr) auto; gap: 8px; justify-content: start; width: 100%; height: auto; min-width: 0; min-height: 44px; padding-inline: 4px; white-space: normal; text-align: left; }
+.subject-toggle strong { min-width: 0; font-size: 13px; overflow-wrap: anywhere; }
+.rotated { transform: rotate(90deg); }
+.topic-main { flex: 1; min-width: 0; }
+.topic-main h3 { margin: 0 0 6px; font-size: 13px; overflow-wrap: anywhere; }
+.topic-main small { color: var(--muted-foreground); font-size: 11px; }
+.topic-actions { display: flex; flex-shrink: 0; }
+.subtopic { padding-left: 30px; background: var(--muted); }
+.filters { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 14px; margin: 22px 0; }
+.charts-grid { margin-top: 24px; }
+@media (max-width: 570px) {
+  .edital-toolbar, .filters { grid-template-columns: minmax(0,1fr); gap: 14px; }
+  .edital-info { grid-template-columns: minmax(0,1fr); }
+  .edital-info .card-actions { margin-top: 0; }
+  .subject-header { grid-template-columns: minmax(0,1fr); padding: 10px; gap: 2px; }
+  .subject-header > div { justify-content: flex-end; }
+  .topic-row { display: grid; grid-template-columns: minmax(0,1fr); gap: 10px; }
+  .topic-actions { justify-content: flex-end; }
+  .status-select { max-width: 100%; width: 100%; min-height: 38px; padding: 8px; }
+}
