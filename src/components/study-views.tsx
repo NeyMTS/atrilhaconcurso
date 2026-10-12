@@ -55,6 +55,7 @@ import {
   saveProfile,
 } from '@/lib/study.functions';
 import { toast } from 'sonner';
+import { InstitutionMark } from './institution-mark';
 import {
   BarChart,
   Bar,
@@ -572,29 +573,12 @@ export function HomeView() {
                       'completed',
                   ).length;
 
-                  const abbreviation = getDisplayName(
-                    details.agency || details.name,
-                  )
-                    .slice(0, 3)
-                    .toUpperCase();
-
                   return (
                     <article
                       className="contest-card"
                       key={contest.id}
                     >
-                      <div
-                        className={`contest-emblem ${
-                          index % 2
-                            ? 'alternate'
-                            : ''
-                        }`}
-                      >
-                        <ShieldCheck size={25} />
-                        <span>
-                          {abbreviation || 'CON'}
-                        </span>
-                      </div>
+                      <InstitutionMark agency={details.agency || details.name || ""} />
 
                       <div className="contest-content">
                         <div className="contest-title">
@@ -650,20 +634,7 @@ export function HomeView() {
                       className="contest-card"
                       key={contest.id}
                     >
-                      <div
-                        className={`contest-emblem ${
-                          index % 2
-                            ? 'alternate'
-                            : ''
-                        }`}
-                      >
-                        <ShieldCheck size={25} />
-                        <span>
-                          {contest.id
-                            .slice(0, 3)
-                            .toUpperCase()}
-                        </span>
-                      </div>
+                      <InstitutionMark agency={contest.id} />
 
                       <div className="contest-content">
                         <div className="contest-title">
@@ -1218,11 +1189,11 @@ export function StudyView() {
 
       <div className="section-heading spaced">
         <div className="segmented">
-          {[
+          {([
             ['sessions', 'Sessões'],
             ['questions', 'Questões'],
             ['mock', 'Simulados'],
-          ].map(([value, label]) => (
+          ] as const).map(([value, label]) => (
             <Button
               key={value}
               variant="ghost"
@@ -1683,9 +1654,7 @@ export function EditalView() {
                 className="catalog-card"
                 key={item.id}
               >
-                <span className="outline-icon">
-                  <ShieldCheck size={25} />
-                </span>
+                <InstitutionMark agency={item.id} />
 
                 <h2>{item.label}</h2>
 
