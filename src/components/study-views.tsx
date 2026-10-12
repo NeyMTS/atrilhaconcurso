@@ -55,7 +55,6 @@ import {
   saveProfile,
 } from '@/lib/study.functions';
 import { toast } from 'sonner';
-import desk from '@/assets/study-desk.jpg';
 import {
   BarChart,
   Bar,
@@ -428,12 +427,6 @@ export function HomeView() {
           </Button>
         </div>
 
-        <img
-          src={desk}
-          alt="Caderno aberto, lápis e planta"
-          width={768}
-          height={512}
-        />
       </section>
 
       <div className="section-heading">
