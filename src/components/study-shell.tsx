@@ -1,8 +1,337 @@
-import { Link,useLocation } from '@tanstack/react-router';
-import { BookOpen,House,Timer,ChartNoAxesCombined,ChevronDown,ShieldCheck,MoreHorizontal,Settings,Download,LogOut,UserRound,Cloud,ArrowUpRight } from 'lucide-react';
+
+import { useState, type ReactNode } from 'react';
+import { Link, useLocation } from '@tanstack/react-router';
+import {
+  BookOpen,
+  House,
+  Timer,
+  ChartNoAxesCombined,
+  ChevronDown,
+  ShieldCheck,
+  MoreHorizontal,
+  Settings,
+  Download,
+  LogOut,
+  UserRound,
+  Cloud,
+} from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
 import { useStudies } from './study-provider';
-import { useState,type ReactNode } from 'react';
 import { AccountDialog } from './study-views';
-const nav=[{to:'/',label:'Início',icon:House},{to:'/estudar',label:'Estudar',icon:Timer},{to:'/edital',label:'Edital',icon:BookOpen},{to:'/evolucao',label:'Evolução',icon:ChartNoAxesCombined}] as const;
-export function StudyShell({children}:{children:ReactNode}){const {user,data,login,logout}=useStudies();const path=useLocation({select:s=>s.pathname});const [menu,setMenu]=useState(false),[dialog,setDialog]=useState('');const name=data.profile?.display_name||user?.user_metadata['full_name']||'Minha conta';return <div className="app-shell"><aside className="sidebar"><Link to="/" className="brand"><span className="brand-mark"><BookOpen size={21}/></span><span>Central de Estudos<small>CONCURSOS POLICIAIS</small></span></Link><div className="workspace-label">SEU ESPAÇO DE ESTUDOS</div><nav>{nav.map(n=><Button key={n.to} asChild variant="ghost" className={'nav-item '+(path===n.to?'nav-active':'')}><Link to={n.to}><n.icon size={19}/>{n.label}{path===n.to&&<span className="nav-dot"/>}</Link></Button>)}</nav><div className="sidebar-bottom"><div className="quiet-note"><ShieldCheck size={21}/><div>Seu progresso, no seu ritmo.<p>Um estudo de cada vez.</p></div></div><Button variant="ghost" className="nav-item" onClick={()=>setDialog('settings')}><Settings size={18}/>Configurações</Button><Button variant="ghost" className="nav-item" onClick={()=>setDialog('backup')}><Download size={18}/>Backup e exportação</Button><div className="sidebar-account"><span className="avatar"><UserRound size={18}/></span><div>{user?name.split(' ')[0]:'Seu espaço pessoal'}<small>{user?'Conta conectada':'Entre para sincronizar'}</small></div><Button variant="ghost" size="icon" aria-label="Abrir conta" onClick={()=>setDialog('account')}><MoreHorizontal/></Button></div></div></aside><div className="main-shell"><header className="topbar"><div className="mobile-brand"><BookOpen size={20}/><strong>Central de Estudos</strong></div><div className="breadcrumb">Meu espaço <span>/</span> <strong>{nav.find(n=>n.to===path)?.label||'Início'}</strong></div><div className="topbar-actions"><span className="sync-status"><Cloud size={15}/>{user?'Salvo na sua conta':'Seu painel pessoal'}</span><Button variant="outline" className="account-button" onClick={()=>user?setMenu(!menu):void login()}><span className="avatar small"><UserRound size={15}/></span>{user?name.split(' ')[0]:'Entrar com Google'}<ChevronDown size={14}/></Button><Button className="mobile-menu" size="icon" variant="ghost" aria-label="Menu secundário" onClick={()=>setMenu(!menu)}><MoreHorizontal/></Button>{menu&&<div className="account-menu">{[['account','Minha conta',UserRound],['settings','Configurações',Settings],['backup','Backup e exportação',Download]].map(([id,label,Icon])=>{const I=Icon as typeof Settings;return <Button key={String(id)} variant="ghost" onClick={()=>{setMenu(false);setDialog(String(id))}}><I size={16}/>{String(label)}</Button>})}{user&&<Button variant="ghost" onClick={()=>{setMenu(false);void logout()}}><LogOut size={16}/>Sair da conta</Button>}</div>}</div></header><main>{children}</main><footer className="page-footer"><span>Central de Estudos <span className="footer-dot">·</span> Consistência constrói resultados.</span><span><ShieldCheck size={13}/> Seus dados, sob seu controle.</span></footer></div><nav className="bottom-nav">{nav.map(n=><Button key={n.to} variant="ghost" asChild className={path===n.to?'active':''}><Link to={n.to}><n.icon size={20}/><span>{n.label}</span></Link></Button>)}</nav>{dialog&&<AccountDialog mode={dialog} close={()=>setDialog('')}/>}</div>}
+
+const nav = [
+  { to: '/', label: 'Início', icon: House },
+  { to: '/estudar', label: 'Estudar', icon: Timer },
+  { to: '/edital', label: 'Edital', icon: BookOpen },
+  { to: '/evolucao', label: 'Evolução', icon: ChartNoAxesCombined },
+] as const;
+
+type DialogMode = 'account' | 'settings' | 'backup' | '';
+
+export function StudyShell({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  const { user, data, login, logout } = useStudies();
+  const path = useLocation({ select: (state) => state.pathname });
+
+  const [menu, setMenu] = useState(false);
+  const [dialog, setDialog] = useState<DialogMode>('');
+
+  const profileName =
+    data.profile?.display_name ||
+    user?.user_metadata?.['full_name'] ||
+    user?.user_metadata?.['name'] ||
+    '';
+
+  const firstName = profileName.trim().split(/\s+/)[0];
+  const accountLabel = user
+    ? firstName || 'Minha conta'
+    : 'Entrar com Google';
+
+  const currentPage =
+    nav.find((item) => item.to === path)?.label ?? 'Início';
+
+  const openDialog = (mode: Exclude<DialogMode, ''>) => {
+    setMenu(false);
+    setDialog(mode);
+  };
+
+  const handleAccountAction = () => {
+    if (user) {
+      setMenu((current) => !current);
+      return;
+    }
+
+    void login();
+  };
+
+  return (
+    <div className="app-shell">
+      <aside className="sidebar">
+        <Link
+          to="/"
+          className="brand"
+          aria-label="AtrilhaConcurso — página inicial"
+        >
+          <span className="brand-mark">
+            <BookOpen size={22} strokeWidth={2.2} />
+          </span>
+
+          <span className="brand-copy">
+            <strong>AtrilhaConcurso</strong>
+            <small>PLANEJE. ESTUDE. EVOLUA.</small>
+          </span>
+        </Link>
+
+        <div className="workspace-label">
+          SEU ESPAÇO DE ESTUDOS
+        </div>
+
+        <nav className="primary-nav" aria-label="Navegação principal">
+          {nav.map((item) => {
+            const Icon = item.icon;
+            const active = path === item.to;
+
+            return (
+              <Button
+                key={item.to}
+                asChild
+                variant="ghost"
+                className={`nav-item ${active ? 'nav-active' : ''}`}
+              >
+                <Link
+                  to={item.to}
+                  aria-current={active ? 'page' : undefined}
+                >
+                  <Icon size={19} strokeWidth={active ? 2.3 : 1.9} />
+                  <span>{item.label}</span>
+                  {active && <span className="nav-dot" />}
+                </Link>
+              </Button>
+            );
+          })}
+        </nav>
+
+        <div className="sidebar-bottom">
+          <div className="quiet-note">
+            <span className="quiet-note-icon">
+              <ShieldCheck size={20} />
+            </span>
+
+            <div>
+              <strong>Um passo de cada vez.</strong>
+              <p>Consistência constrói resultados.</p>
+            </div>
+          </div>
+
+          <div className="sidebar-tools">
+            <Button
+              variant="ghost"
+              className="nav-item"
+              onClick={() => openDialog('settings')}
+            >
+              <Settings size={18} />
+              <span>Configurações</span>
+            </Button>
+
+            <Button
+              variant="ghost"
+              className="nav-item"
+              onClick={() => openDialog('backup')}
+            >
+              <Download size={18} />
+              <span>Backup e exportação</span>
+            </Button>
+          </div>
+
+          <div className="sidebar-account">
+            <span className="avatar">
+              <UserRound size={18} />
+            </span>
+
+            <div className="sidebar-account-copy">
+              <strong>{user ? accountLabel : 'Seu espaço pessoal'}</strong>
+              <small>
+                {user ? 'Conta conectada' : 'Entre para sincronizar'}
+              </small>
+            </div>
+
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Abrir opções da conta"
+              onClick={() => openDialog('account')}
+            >
+              <MoreHorizontal size={20} />
+            </Button>
+          </div>
+        </div>
+      </aside>
+
+      <div className="main-shell">
+        <header className="topbar">
+          <Link to="/" className="mobile-brand">
+            <span className="brand-mark">
+              <BookOpen size={19} />
+            </span>
+            <strong>AtrilhaConcurso</strong>
+          </Link>
+
+          <div className="breadcrumb" aria-label="Localização atual">
+            <span>Meu espaço</span>
+            <span className="breadcrumb-separator">/</span>
+            <strong>{currentPage}</strong>
+          </div>
+
+          <div className="topbar-actions">
+            <span className="sync-status">
+              <Cloud size={15} />
+              <span>
+                {user ? 'Conta sincronizada' : 'Painel pessoal'}
+              </span>
+            </span>
+
+            <div className="account-actions">
+              <Button
+                variant="outline"
+                className="account-button"
+                onClick={handleAccountAction}
+                aria-expanded={user ? menu : undefined}
+                aria-haspopup={user ? 'menu' : undefined}
+              >
+                <span className="avatar small">
+                  <UserRound size={15} />
+                </span>
+
+                <span className="account-button-label">
+                  {accountLabel}
+                </span>
+
+                <ChevronDown size={14} />
+              </Button>
+
+              {menu && (
+                <>
+                  <button
+                    type="button"
+                    className="menu-dismiss"
+                    aria-label="Fechar menu da conta"
+                    onClick={() => setMenu(false)}
+                  />
+
+                  <div className="account-menu" role="menu">
+                    <Button
+                      variant="ghost"
+                      role="menuitem"
+                      onClick={() => openDialog('account')}
+                    >
+                      <UserRound size={16} />
+                      Minha conta
+                    </Button>
+
+                    <Button
+                      variant="ghost"
+                      role="menuitem"
+                      onClick={() => openDialog('settings')}
+                    >
+                      <Settings size={16} />
+                      Configurações
+                    </Button>
+
+                    <Button
+                      variant="ghost"
+                      role="menuitem"
+                      onClick={() => openDialog('backup')}
+                    >
+                      <Download size={16} />
+                      Backup e exportação
+                    </Button>
+
+                    {user && (
+                      <Button
+                        variant="ghost"
+                        role="menuitem"
+                        onClick={() => {
+                          setMenu(false);
+                          void logout();
+                        }}
+                      >
+                        <LogOut size={16} />
+                        Sair da conta
+                      </Button>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+
+            <Button
+              className="mobile-menu"
+              size="icon"
+              variant="ghost"
+              aria-label="Abrir opções da conta"
+              onClick={() =>
+                user
+                  ? setMenu((current) => !current)
+                  : void login()
+              }
+            >
+              <MoreHorizontal size={21} />
+            </Button>
+          </div>
+        </header>
+
+        <main className="main-content">
+          {children}
+        </main>
+
+        <footer className="page-footer">
+          <span>
+            <strong>AtrilhaConcurso</strong>
+            <span className="footer-dot">·</span>
+            Consistência constrói resultados.
+          </span>
+
+          <span className="footer-privacy">
+            <ShieldCheck size={14} />
+            Seus dados, sob seu controle.
+          </span>
+        </footer>
+      </div>
+
+      <nav className="bottom-nav" aria-label="Navegação inferior">
+        {nav.map((item) => {
+          const Icon = item.icon;
+          const active = path === item.to;
+
+          return (
+            <Button
+              key={item.to}
+              variant="ghost"
+              asChild
+              className={active ? 'active' : ''}
+            >
+              <Link
+                to={item.to}
+                aria-current={active ? 'page' : undefined}
+              >
+                <Icon size={20} strokeWidth={active ? 2.3 : 1.9} />
+                <span>{item.label}</span>
+              </Link>
+            </Button>
+          );
+        })}
+      </nav>
+
+      {dialog !== '' && (
+        <AccountDialog
+          mode={dialog}
+          close={() => setDialog('')}
+        />
+      )}
+    </div>
+  );
+}
