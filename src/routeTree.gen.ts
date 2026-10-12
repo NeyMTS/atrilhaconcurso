@@ -10,33 +10,63 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as EditalRouteImport } from './routes/edital'
+import { Route as EstudarRouteImport } from './routes/estudar'
+import { Route as EvolucaoRouteImport } from './routes/evolucao'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EditalRoute = EditalRouteImport.update({
+  id: '/edital',
+  path: '/edital',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EstudarRoute = EstudarRouteImport.update({
+  id: '/estudar',
+  path: '/estudar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EvolucaoRoute = EvolucaoRouteImport.update({
+  id: '/evolucao',
+  path: '/evolucao',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/edital': typeof EditalRoute
+  '/estudar': typeof EstudarRoute
+  '/evolucao': typeof EvolucaoRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/edital': typeof EditalRoute
+  '/estudar': typeof EstudarRoute
+  '/evolucao': typeof EvolucaoRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/edital': typeof EditalRoute
+  '/estudar': typeof EstudarRoute
+  '/evolucao': typeof EvolucaoRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/edital' | '/estudar' | '/evolucao'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/edital' | '/estudar' | '/evolucao'
+  id: '__root__' | '/' | '/edital' | '/estudar' | '/evolucao'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  EditalRoute: typeof EditalRoute
+  EstudarRoute: typeof EstudarRoute
+  EvolucaoRoute: typeof EvolucaoRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +78,35 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/edital': {
+      id: '/edital'
+      path: '/edital'
+      fullPath: '/edital'
+      preLoaderRoute: typeof EditalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/estudar': {
+      id: '/estudar'
+      path: '/estudar'
+      fullPath: '/estudar'
+      preLoaderRoute: typeof EstudarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/evolucao': {
+      id: '/evolucao'
+      path: '/evolucao'
+      fullPath: '/evolucao'
+      preLoaderRoute: typeof EvolucaoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  EditalRoute: EditalRoute,
+  EstudarRoute: EstudarRoute,
+  EvolucaoRoute: EvolucaoRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
