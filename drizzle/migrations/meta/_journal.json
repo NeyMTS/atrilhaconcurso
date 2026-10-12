@@ -15,6 +15,13 @@
       "when": 1791804498816,
       "tag": "0001_study_validation_and_backup",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791804928772,
+      "tag": "0002_study_integrity_hardening",
+      "breakpoints": true
     }
   ]
 }
