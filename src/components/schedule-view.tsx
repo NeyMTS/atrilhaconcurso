@@ -26,8 +26,8 @@ export function ScheduleView() {
 
   const subjectName = (id: string) => data.items.find((i) => i.id === id)?.payload.name ?? 'Matéria removida';
 
-  const persist = async (payload: Schedule, message = 'Cronograma salvo') => {
-    if (!user) return void login();
+  const persist = async (payload: Schedule, message = 'Cronograma salvo'): Promise<boolean> => {
+    if (!user) { void login(); return false; }
     setBusy(true);
     try {
       await save({ data: { id: item?.id, kind: 'schedule', payload } });
@@ -36,6 +36,7 @@ export function ScheduleView() {
       return true;
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Não foi possível salvar');
+      return false;
     } finally {
       setBusy(false);
     }
@@ -132,7 +133,7 @@ export function ScheduleView() {
 }
 
 function ScheduleSetup({ initial, busy, onSave, onCancel }: {
-  initial?: Schedule; busy: boolean; onCancel?: () => void; onSave: (c: ScheduleConfig, regenerate: boolean) => void;
+  initial?: Schedule | undefined; busy: boolean; onCancel?: (() => void) | undefined; onSave: (c: ScheduleConfig, regenerate: boolean) => void;
 }) {
   const { data } = useStudies();
   const contests = data.items.filter((i) => i.kind === 'contest' && !i.payload.archived);

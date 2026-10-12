@@ -66,10 +66,10 @@ export function generate(config: ScheduleConfig, start: string): Block[] {
     for (let i = 0; i < perDay; i++) {
       const isLast = i === perDay - 1 && perDay > 1;
       let activity: Activity = 'theory';
-      let subject = weighted[cursor % weighted.length];
+      let subject = weighted[cursor % weighted.length]!;
       if (config.review && isLast && studiedThisWeek.length) {
         activity = 'review';
-        subject = studiedThisWeek[(blocks.length) % studiedThisWeek.length];
+        subject = studiedThisWeek[blocks.length % studiedThisWeek.length]!;
       } else {
         if (config.questions && i % 3 === 2) activity = 'questions';
         cursor++;
@@ -120,7 +120,7 @@ export function matchSession(sessions: Session[], blocks: Block[], block: Block)
 export function blockTimes(schedule: Schedule, date: string) {
   const list = schedule.blocks.filter((b) => b.date === date);
   if (!schedule.start_time) return list.map((b) => ({ block: b, time: '' }));
-  const [h, m] = schedule.start_time.split(':').map(Number);
+  const [h = 0, m = 0] = schedule.start_time.split(':').map(Number);
   let t = h * 60 + m;
   return list.map((b) => {
     const time = `${String(Math.floor(t / 60) % 24).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`;
