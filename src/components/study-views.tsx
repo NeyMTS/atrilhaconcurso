@@ -17,12 +17,530 @@ function useActions(){const {user,login,refresh}=useStudies();const remove=useSe
 function Empty({icon:Icon=BookOpen,title,text,children}:{icon?:typeof BookOpen;title:string;text?:string;children?:React.ReactNode}){return <div className="empty-state"><span className="empty-icon"><Icon size={23}/></span><h3>{title}</h3>{text&&<p>{text}</p>}{children}</div>}
 function Title({eyebrow,title,subtitle,children}:{eyebrow:string;title:string;subtitle:string;children?:React.ReactNode}){return <div className="page-heading"><div><div className="eyebrow">{eyebrow}</div><h1>{title}</h1><p>{subtitle}</p></div>{children}</div>}
 function GoalBar({value,goal}:{value:number;goal:number}){return <div className="progress-track"><span style={{width:`${goal?Math.min(100,value/goal*100):0}%`}}/></div>}
-export function HomeView(){const {data,user,login,loading}=useStudies();const [goalForm,setGoalForm]=useState(false);const today=day(),now=new Date(),start=new Date(now);start.setDate(start.getDate()-((start.getDay()+6)%7));const week=day(start);const sessions=data.sessions;const daily=sessions.reduce((n,s)=>n+secondsOnDay(s,today),0);const weekly=sessions.reduce((n,s)=>{let total=0;for(let i=0;i<7;i++){const d=new Date(start);d.setDate(d.getDate()+i);total+=secondsOnDay(s,day(d))}return n+total},0);const qs=data.items.filter(x=>['questions','mock'].includes(x.kind)&&x.payload.date>=week&&x.payload.date<=today);const stats=questionStats(qs);const goals=data.items.filter(x=>x.kind==='goal'&&!x.payload.contest_id&&x.payload.date<=today).sort((a,b)=>b.created_at.localeCompare(a.created_at));const goal=goals[0]?.payload;const contests=data.items.filter(x=>x.kind==='contest'&&!x.payload.archived);const reviews=data.items.filter(x=>x.kind==='review'&&!x.payload.done).sort((a,b)=>a.payload.date.localeCompare(b.payload.date));const active=sessions.find(s=>s.state!=='finished');const name=data.profile?.display_name||user?.user_metadata['full_name'];return <>
- <Title eyebrow="SEU PLANEJAMENTO, MAIS CLARO" title={name?`Olá, ${name.split(' ')[0]}.`:'Seu próximo passo começa aqui.'} subtitle="Organize seus estudos. Acompanhe o que realmente importa."><div className="date-label"><CalendarDays size={16}/>{now.toLocaleDateString('pt-BR',{day:'numeric',month:'long'})}</div></Title>
- <section className="welcome-band"><div><span className="mini-label"><span className="live-dot"/> FOCO NO QUE ESTÁ AO SEU ALCANCE</span><h2>{active?'Seu estudo está em andamento.':'Um pouco hoje. Mais perto amanhã.'}</h2><p>{active?'Retome sua sessão e mantenha seu progresso registrado.':'Cada sessão conta. Escolha um conteúdo e dê o próximo passo.'}</p><Button asChild className="start-button"><Link to="/estudar"><Play size={16} fill="currentColor"/>{active?'Retomar estudo':'Iniciar estudo'}<ArrowRight size={16}/></Link></Button></div><img src={desk} alt="Caderno aberto, lápis e planta" width={768} height={512}/></section>
- <div className="section-heading"><h2>Seu estudo em números</h2><span>Esta semana</span></div><section className="metrics-grid">{[{icon:Clock3,label:'Horas líquidas hoje',value:hours(daily),bottom:goal?`Meta diária: ${goal.daily_hours}h`:'Meta diária não definida',amount:daily/3600,goal:goal?.daily_hours},{icon:CalendarDays,label:'Horas nesta semana',value:hours(weekly),bottom:goal?`Meta semanal: ${goal.weekly_hours}h`:'Meta semanal não definida',amount:weekly/3600,goal:goal?.weekly_hours},{icon:CheckCheck,label:'Questões resolvidas',value:String(stats.total),bottom:`${stats.answered} respondidas · ${stats.blank} em branco`,amount:stats.total,goal:goal?.questions},{icon:Percent,label:'Taxa de acerto',value:pct(stats.rate),bottom:stats.total?`${stats.correct} acertos · ${stats.wrong} erros`:'Ainda sem questões registradas',amount:stats.rate||0,goal:100}].map(m=><article className="metric-card" key={m.label}><div className="metric-label">{m.label}<m.icon size={18}/></div><strong>{m.value}</strong><GoalBar value={m.amount} goal={m.goal||0}/><small>{m.bottom}</small></article>)}</section>
- <div className="dashboard-grid"><section><div className="section-heading"><h2>Meus concursos <span className="count-badge">{contests.length}</span></h2><Button variant="link" asChild><Link to="/edital">Ver editais<ArrowUpRight size={14}/></Link></Button></div><div className="contest-list">{(contests.length?contests:catalog).map((c:any,i)=>{const p=c.payload||{name:c.label,role:i===0?'Agente de Polícia Federal':'Policial Rodoviário Federal',year:c.year};const subs=data.items.filter(s=>s.kind==='subject'&&s.payload.contest_id===c.id),topics=data.items.filter(t=>t.kind==='topic'&&!t.payload.parent_id&&subs.some(s=>s.id===t.payload.subject_id)),done=topics.filter(t=>t.payload.status==='completed').length;return <article className="contest-card" key={c.id}><div className={'contest-emblem '+(i%2?'alternate':'')}><ShieldCheck size={25}/><span>{c.payload?String(p.agency||p.name).slice(0,3).toUpperCase():i===0?'PF':'PRF'}</span></div><div className="contest-content"><div className="contest-title"><h3>{p.name}</h3><span className="subtle-tag">{p.year||'Sem ano'}</span></div><p>{c.payload?p.agency:'Referência oficial · Cebraspe'}</p><div className="contest-progress"><GoalBar value={done} goal={topics.length}/><small>{topics.length?`${done} / ${topics.length} tópicos`:'Ainda não adicionado'}</small></div><small>{c.payload?'Progresso por tópicos concluídos':'Histórico · vigência atual não confirmada'}</small></div><Button variant="ghost" size="icon" asChild aria-label={'Abrir '+p.name}><Link to="/edital"><ChevronRight/></Link></Button></article>})}</div><div className="next-step"><span className="outline-icon"><Target size={19}/></span><div><h3>Próxima ação</h3><p>{reviews.length?`Revisar ${data.items.find(t=>t.id===reviews[0]?.payload.topic_id)?.payload.name||'tópico agendado'}`:contests.length?'Escolha uma disciplina e registre sua primeira sessão.':'Adicione um edital para organizar seus conteúdos.'}</p></div><Button variant="ghost" size="icon" asChild aria-label="Próxima ação"><Link to={reviews.length?'/estudar':'/edital'}><ArrowRight/></Link></Button></div></section><section><div className="section-heading"><h2>Revisões prioritárias</h2><RotateCcw size={16}/></div><div className="review-panel">{reviews.length?reviews.slice(0,3).map(r=>{const t=data.items.find(x=>x.id===r.payload.topic_id);return <div className="review-row" key={r.id}><span className="outline-icon"><RotateCcw size={18}/></span><div><h3>{t?.payload.name}</h3><p>{r.payload.date<=today?'Revisão pendente':'Agendada'} · {new Date(r.payload.date+'T12:00').toLocaleDateString('pt-BR')}</p></div></div>}):<Empty icon={RotateCcw} title="Tudo em dia por aqui" text="Marque tópicos para revisão no seu edital."><Button variant="link" asChild><Link to="/edital">Organizar revisões<ArrowRight size={14}/></Link></Button></Empty>}</div><div className="goal-callout"><span className="outline-icon"><Target size={20}/></span><h3>{goal?'Suas metas, seu ritmo':'Qual é o seu ritmo?'}</h3><p>{goal?'Suas metas acompanham sua rotina. Ajuste quando precisar.':'Defina metas que façam sentido para a sua rotina.'}</p><Button variant="outline" onClick={()=>user?setGoalForm(true):void login()}>{goal?'Ajustar metas':'Definir minhas metas'}<ArrowRight size={14}/></Button></div></section></div>
- {!user&&<div className="signin-strip"><ShieldCheck size={19}/><div><strong>Seu progresso acompanha você.</strong><p>Entre com Google para salvar seus estudos e acessar em qualquer dispositivo.</p></div><Button variant="outline" onClick={()=>void login()}>Entrar com Google<ArrowUpRight size={15}/></Button></div>}{loading&&<p className="form-note">Carregando seus registros…</p>}{goalForm&&<ItemForm kind="goal" close={()=>setGoalForm(false)}/>}</>}
+
+export function HomeView() {
+  const { data, user, login, loading } = useStudies();
+  const [goalForm, setGoalForm] = useState(false);
+
+  const today = day();
+  const now = new Date();
+  const start = new Date(now);
+  start.setDate(start.getDate() - ((start.getDay() + 6) % 7));
+
+  const week = day(start);
+  const sessions = data.sessions;
+
+  const daily = sessions.reduce(
+    (total, session) => total + secondsOnDay(session, today),
+    0,
+  );
+
+  const weekly = sessions.reduce((total, session) => {
+    let seconds = 0;
+
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(start);
+      date.setDate(date.getDate() + i);
+      seconds += secondsOnDay(session, day(date));
+    }
+
+    return total + seconds;
+  }, 0);
+
+  const questions = data.items.filter(
+    (item) =>
+      ["questions", "mock"].includes(item.kind) &&
+      item.payload.date >= week &&
+      item.payload.date <= today,
+  );
+
+  const stats = questionStats(questions);
+
+  const goals = data.items
+    .filter(
+      (item) =>
+        item.kind === "goal" &&
+        !item.payload.contest_id &&
+        item.payload.date <= today,
+    )
+    .sort((a, b) => b.created_at.localeCompare(a.created_at));
+
+  const goal = goals[0]?.payload;
+
+  const contests = data.items.filter(
+    (item) => item.kind === "contest" && !item.payload.archived,
+  );
+
+  const reviews = data.items
+    .filter((item) => item.kind === "review" && !item.payload.done)
+    .sort((a, b) => a.payload.date.localeCompare(b.payload.date));
+
+  const active = sessions.find((session) => session.state !== "finished");
+  const name =
+    data.profile?.display_name || user?.user_metadata["full_name"];
+
+  const weekDays = Array.from({ length: 7 }, (_, index) => {
+    const date = new Date(start);
+    date.setDate(date.getDate() + index);
+
+    const key = day(date);
+    const seconds = sessions.reduce(
+      (total, session) => total + secondsOnDay(session, key),
+      0,
+    );
+
+    return {
+      key,
+      label: date
+        .toLocaleDateString("pt-BR", { weekday: "short" })
+        .replace(".", ""),
+      hours: Math.round(seconds / 360) / 10,
+      isToday: key === today,
+    };
+  });
+
+  const maxHours = Math.max(2, ...weekDays.map((item) => item.hours));
+
+  const metrics = [
+    {
+      icon: Clock3,
+      label: "Horas líquidas hoje",
+      value: hours(daily),
+      detail: goal
+        ? `Meta diária: ${goal.daily_hours}h`
+        : "Meta diária não definida",
+      amount: daily / 3600,
+      target: goal?.daily_hours || 0,
+      accent: "blue",
+    },
+    {
+      icon: CalendarDays,
+      label: "Horas nesta semana",
+      value: hours(weekly),
+      detail: goal
+        ? `Meta semanal: ${goal.weekly_hours}h`
+        : "Meta semanal não definida",
+      amount: weekly / 3600,
+      target: goal?.weekly_hours || 0,
+      accent: "violet",
+    },
+    {
+      icon: CheckCheck,
+      label: "Questões resolvidas",
+      value: String(stats.total),
+      detail: `${stats.correct} acertos · ${stats.wrong} erros`,
+      amount: stats.total,
+      target: goal?.questions || 0,
+      accent: "cyan",
+    },
+    {
+      icon: Percent,
+      label: "Taxa de acerto",
+      value: pct(stats.rate),
+      detail: stats.total
+        ? `${stats.answered} respondidas · ${stats.blank} em branco`
+        : "Registre questões para acompanhar",
+      amount: stats.rate || 0,
+      target: 100,
+      accent: "amber",
+    },
+  ];
+
+  return (
+    <>
+      <Title
+        eyebrow="SEU PLANEJAMENTO, MAIS CLARO"
+        title={
+          name
+            ? `Olá, ${name.split(" ")[0]}.`
+            : "Seu próximo passo começa aqui."
+        }
+        subtitle="Organize seus estudos. Acompanhe o que realmente importa."
+      >
+        <div className="date-label">
+          <CalendarDays size={16} />
+          {now.toLocaleDateString("pt-BR", {
+            day: "numeric",
+            month: "long",
+          })}
+        </div>
+      </Title>
+
+      <section className="welcome-band">
+        <div>
+          <span className="mini-label">
+            <span className="live-dot" />
+            FOCO NO QUE ESTÁ AO SEU ALCANCE
+          </span>
+
+          <h2>
+            {active
+              ? "Seu estudo está em andamento."
+              : "Um pouco hoje. Mais perto amanhã."}
+          </h2>
+
+          <p>
+            {active
+              ? "Retome sua sessão e mantenha seu progresso registrado."
+              : "Cada sessão conta. Escolha um conteúdo e dê o próximo passo."}
+          </p>
+
+          <Button asChild className="start-button">
+            <Link to="/estudar">
+              <Play size={16} fill="currentColor" />
+              {active ? "Retomar estudo" : "Iniciar estudo"}
+              <ArrowRight size={16} />
+            </Link>
+          </Button>
+        </div>
+
+        <img
+          src={desk}
+          alt="Caderno aberto, lápis e planta"
+          width={768}
+          height={512}
+        />
+      </section>
+
+      <div className="section-heading">
+        <h2>Seu estudo em números</h2>
+        <span>Resumo da semana</span>
+      </div>
+
+      <section className="metrics-grid">
+        {metrics.map((metric) => (
+          <article
+            className={`metric-card metric-${metric.accent}`}
+            key={metric.label}
+          >
+            <div className="metric-label">
+              <span>{metric.label}</span>
+              <metric.icon size={19} />
+            </div>
+
+            <strong>{metric.value}</strong>
+
+            <GoalBar value={metric.amount} goal={metric.target} />
+
+            <small>{metric.detail}</small>
+          </article>
+        ))}
+      </section>
+
+      <section className="weekly-panel">
+        <div className="section-heading">
+          <div>
+            <h2>Ritmo de estudos</h2>
+            <p className="muted-copy">
+              Tempo registrado em cada dia desta semana
+            </p>
+          </div>
+
+          <Link to="/estudar" className="text-link">
+            Ver estudos <ArrowRight size={14} />
+          </Link>
+        </div>
+
+        <div
+          className="weekly-chart"
+          role="img"
+          aria-label="Gráfico de horas estudadas por dia"
+        >
+          {weekDays.map((item) => (
+            <div className="weekly-day" key={item.key}>
+              <div className="weekly-bar-area">
+                <span className="weekly-value">
+                  {item.hours ? `${item.hours}h` : "—"}
+                </span>
+
+                <div
+                  className={`weekly-bar ${
+                    item.isToday ? "is-today" : ""
+                  }`}
+                  style={{
+                    height: `${Math.max(
+                      5,
+                      (item.hours / maxHours) * 100,
+                    )}%`,
+                  }}
+                />
+              </div>
+
+              <span
+                className={`weekly-day-label ${
+                  item.isToday ? "is-today" : ""
+                }`}
+              >
+                {item.label}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        <div className="weekly-footer">
+          <span>
+            <span className="legend-dot" />
+            Horas registradas
+          </span>
+
+          <strong>
+            {hours(weekly)} <small>na semana</small>
+          </strong>
+        </div>
+      </section>
+
+      <div className="dashboard-grid">
+        <section>
+          <div className="section-heading">
+            <h2>
+              Meus concursos{" "}
+              <span className="count-badge">{contests.length}</span>
+            </h2>
+
+            <Button variant="link" asChild>
+              <Link to="/edital">
+                Ver editais <ArrowUpRight size={14} />
+              </Link>
+            </Button>
+          </div>
+
+          <div className="contest-list">
+            {(contests.length ? contests : catalog).map(
+              (contest: any, index: number) => {
+                const details = contest.payload || {
+                  name: contest.label,
+                  role:
+                    index === 0
+                      ? "Agente de Polícia Federal"
+                      : "Policial Rodoviário Federal",
+                  year: contest.year,
+                };
+
+                const subjects = data.items.filter(
+                  (item) =>
+                    item.kind === "subject" &&
+                    item.payload.contest_id === contest.id,
+                );
+
+                const topics = data.items.filter(
+                  (item) =>
+                    item.kind === "topic" &&
+                    !item.payload.parent_id &&
+                    subjects.some(
+                      (subject) =>
+                        subject.id === item.payload.subject_id,
+                    ),
+                );
+
+                const completed = topics.filter(
+                  (item) => item.payload.status === "completed",
+                ).length;
+
+                return (
+                  <article className="contest-card" key={contest.id}>
+                    <div
+                      className={`contest-emblem ${
+                        index % 2 ? "alternate" : ""
+                      }`}
+                    >
+                      <ShieldCheck size={25} />
+                      <span>
+                        {contest.payload
+                          ? String(
+                              details.agency || details.name,
+                            )
+                              .slice(0, 3)
+                              .toUpperCase()
+                          : index === 0
+                            ? "PF"
+                            : "PRF"}
+                      </span>
+                    </div>
+
+                    <div className="contest-content">
+                      <div className="contest-title">
+                        <h3>{details.name}</h3>
+                        <span className="subtle-tag">
+                          {details.year || "Sem ano"}
+                        </span>
+                      </div>
+
+                      <p>
+                        {contest.payload
+                          ? details.agency
+                          : "Referência oficial · Cebraspe"}
+                      </p>
+
+                      <div className="contest-progress">
+                        <GoalBar
+                          value={completed}
+                          goal={topics.length}
+                        />
+                        <small>
+                          {topics.length
+                            ? `${completed} / ${topics.length} tópicos`
+                            : "Ainda não adicionado"}
+                        </small>
+                      </div>
+
+                      <small>
+                        {contest.payload
+                          ? "Progresso por tópicos concluídos"
+                          : "Histórico · vigência atual não confirmada"}
+                      </small>
+                    </div>
+
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      asChild
+                      aria-label={`Abrir ${details.name}`}
+                    >
+                      <Link to="/edital">
+                        <ChevronRight />
+                      </Link>
+                    </Button>
+                  </article>
+                );
+              },
+            )}
+          </div>
+
+          <div className="next-step">
+            <span className="outline-icon">
+              <Target size={19} />
+            </span>
+
+            <div>
+              <h3>Próxima ação</h3>
+              <p>
+                {reviews.length
+                  ? `Revisar ${
+                      data.items.find(
+                        (item) =>
+                          item.id === reviews[0]?.payload.topic_id,
+                      )?.payload.name || "tópico agendado"
+                    }`
+                  : contests.length
+                    ? "Escolha uma disciplina e registre sua próxima sessão."
+                    : "Adicione um edital para organizar seus conteúdos."}
+              </p>
+            </div>
+
+            <Button
+              variant="ghost"
+              size="icon"
+              asChild
+              aria-label="Próxima ação"
+            >
+              <Link to={reviews.length ? "/estudar" : "/edital"}>
+                <ArrowRight />
+              </Link>
+            </Button>
+          </div>
+        </section>
+
+        <section>
+          <div className="section-heading">
+            <h2>Revisões prioritárias</h2>
+            <RotateCcw size={16} />
+          </div>
+
+          <div className="review-panel">
+            {reviews.length ? (
+              reviews.slice(0, 3).map((review) => {
+                const topic = data.items.find(
+                  (item) => item.id === review.payload.topic_id,
+                );
+
+                return (
+                  <div className="review-row" key={review.id}>
+                    <span className="outline-icon">
+                      <RotateCcw size={18} />
+                    </span>
+
+                    <div>
+                      <h3>{topic?.payload.name || "Tópico para revisar"}</h3>
+                      <p>
+                        {review.payload.date <= today
+                          ? "Revisão pendente"
+                          : "Agendada"}{" "}
+                        ·{" "}
+                        {new Date(
+                          review.payload.date + "T12:00",
+                        ).toLocaleDateString("pt-BR")}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <Empty
+                icon={RotateCcw}
+                title="Tudo em dia por aqui"
+                text="Marque tópicos para revisão no seu edital."
+              >
+                <Button variant="link" asChild>
+                  <Link to="/edital">
+                    Organizar revisões <ArrowRight size={14} />
+                  </Link>
+                </Button>
+              </Empty>
+            )}
+          </div>
+
+          <div className="goal-callout">
+            <span className="outline-icon">
+              <Target size={20} />
+            </span>
+
+            <h3>{goal ? "Suas metas, seu ritmo" : "Qual é o seu ritmo?"}</h3>
+
+            <p>
+              {goal
+                ? "Suas metas acompanham sua rotina. Ajuste quando precisar."
+                : "Defina metas que façam sentido para a sua rotina."}
+            </p>
+
+            <Button
+              variant="outline"
+              onClick={() => (user ? setGoalForm(true) : void login())}
+            >
+              {goal ? "Ajustar metas" : "Definir minhas metas"}
+              <ArrowRight size={14} />
+            </Button>
+          </div>
+        </section>
+      </div>
+
+      {!user && (
+        <div className="signin-strip">
+          <ShieldCheck size={19} />
+
+          <div>
+            <strong>Seu progresso acompanha você.</strong>
+            <p>
+              Entre com Google para salvar seus estudos e acessar em
+              qualquer dispositivo.
+            </p>
+          </div>
+
+          <Button variant="outline" onClick={() => void login()}>
+            Entrar com Google <ArrowUpRight size={15} />
+          </Button>
+        </div>
+      )}
+
+      {loading && (
+        <p className="form-note">Carregando seus registros…</p>
+      )}
+
+      {goalForm && (
+        <ItemForm kind="goal" close={() => setGoalForm(false)} />
+      )}
+    </>
+  );
+}
 export function StudyView(){const {data,user,login}=useStudies();const {run,remove}=useActions();const timer=useServerFn(timerAction),edit=useServerFn(editSession);const [now,setNow]=useState(Date.now());useEffect(()=>{const t=setInterval(()=>setNow(Date.now()),1000);return()=>clearInterval(t)},[]);const [cid,setCid]=useState(''),[sid,setSid]=useState(''),[tid,setTid]=useState(''),[shared,setShared]=useState(false),[busy,setBusy]=useState(false),[form,setForm]=useState<{kind:Item['kind'];item?:Item;defaults?:any}|null>(null),[finishing,setFinishing]=useState(false),[notes,setNotes]=useState(''),[editing,setEditing]=useState<Session|null>(null),[minutes,setMinutes]=useState('');const [tab,setTab]=useState('sessions');const contests=data.items.filter(x=>x.kind==='contest'&&!x.payload.archived),subjects=data.items.filter(x=>x.kind==='subject'&&x.payload.contest_id===cid),topics=data.items.filter(x=>x.kind==='topic'&&x.payload.subject_id===sid);const active=data.sessions.find(s=>s.state!=='finished');const linked=data.items.filter(x=>x.kind==='link'&&x.payload.topic_ids.includes(tid));const sharedIds=Array.from(new Set([cid,...linked.flatMap(l=>l.payload.topic_ids.map((id:string)=>{const t=data.items.find(x=>x.id===id),s=data.items.find(x=>x.id===t?.payload.subject_id);return s?.payload.contest_id}).filter(Boolean))]));const act=async(action:'start'|'pause'|'resume'|'finish')=>{setBusy(true);await run(async()=>{await timer({data:{action,id:active?.id,contest_ids:shared?sharedIds:[cid],subject_id:sid,topic_id:tid||null,notes}});if(action==='finish'){setFinishing(false);setForm({kind:'questions',defaults:{contest_id:active?.contest_ids[0],subject_id:active?.subject_id,topic_id:active?.topic_id,date:day(),session_id:active?.id}})}},action==='finish'?'Sessão salva. Questões são opcionais.':'');setBusy(false)};
  return <><Title eyebrow="TEMPO BEM INVESTIDO" title="Hora de estudar." subtitle="Um conteúdo, uma sessão. Seu foco fica no estudo."/><section className="timer-section"><div className="section-heading"><h2><TimerIcon/> Sessão de estudo</h2><span className="subtle-tag">{active?(active.state==='paused'?'Pausada':'Em andamento'):'Pronto para começar'}</span></div>{!active?<div className="form-grid three"><Field label="Concurso"><select value={cid} onChange={e=>{setCid(e.target.value);setSid('');setTid('')}}><option value="">Selecione o concurso</option>{contests.map(c=><option key={c.id} value={c.id}>{c.payload.name}</option>)}</select></Field><Field label="Disciplina"><select value={sid} onChange={e=>{setSid(e.target.value);setTid('')}}><option value="">Selecione a disciplina</option>{subjects.map(s=><option key={s.id} value={s.id}>{s.payload.name}</option>)}</select></Field><Field label="Tópico (opcional)"><select value={tid} onChange={e=>setTid(e.target.value)}><option value="">Toda a disciplina</option>{topics.map(t=><option key={t.id} value={t.id}>{t.payload.name}</option>)}</select></Field></div>:<p className="active-content">{data.items.find(x=>x.id===active.subject_id)?.payload.name}<span>{data.items.find(x=>x.id===active.topic_id)?.payload.name||'Toda a disciplina'}</span></p>}<div className="timer-display"><span>TEMPO LÍQUIDO</span><strong>{clock(active?elapsed(active,now):0)}</strong><div className="timer-buttons">{active?<><Button disabled={busy} onClick={()=>void act(active.state==='paused'?'resume':'pause')}>{active.state==='paused'?<Play/>:<Pause/>}{active.state==='paused'?'Retomar':'Pausar'}</Button><Button disabled={busy} variant="outline" onClick={()=>{setNotes('');setFinishing(true)}}><Square/>Finalizar</Button></>:<Button disabled={busy||(!!user&&!sid)} className="start-button" onClick={()=>user?void act('start'):void login()}><Play fill="currentColor"/>Iniciar estudo</Button>}</div>{!active&&tid&&sharedIds.length>1&&<label className="check-row"><input type="checkbox" checked={shared} onChange={e=>setShared(e.target.checked)}/>Conteúdo compartilhado entre {sharedIds.length} concursos — tempo contado uma vez</label>}</div>{!contests.length&&<p className="form-note centered">Adicione um concurso em <Link to="/edital">Edital</Link> para começar.</p>}</section>
  <div className="section-heading spaced"><div className="segmented">{[['sessions','Sessões'],['questions','Questões'],['mock','Simulados']].map(([v,t])=><Button key={v} variant="ghost" className={tab===v?'selected':''} onClick={()=>setTab(v||'sessions')}>{t}</Button>)}</div><Button variant="outline" onClick={()=>user?setForm({kind:tab==='mock'?'mock':'questions',defaults:{}}):void login()}><Plus/>Registrar {tab==='mock'?'simulado':'questões'}</Button></div>
