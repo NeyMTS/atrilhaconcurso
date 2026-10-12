@@ -46,24 +46,24 @@
 
 :root {
   --radius: 0.875rem;
-  --background: oklch(0.982 0.006 155);
-  --foreground: oklch(0.245 0.035 165);
+  --background: oklch(0.975 0.012 158);
+  --foreground: oklch(0.23 0.04 165);
   --card: oklch(1 0 0);
   --card-foreground: var(--foreground);
   --popover: oklch(1 0 0);
   --popover-foreground: var(--foreground);
-  --primary: oklch(0.39 0.105 157);
+  --primary: oklch(0.34 0.09 160);
   --primary-foreground: oklch(0.99 0.005 150);
-  --secondary: oklch(0.955 0.018 155);
-  --secondary-foreground: oklch(0.30 0.055 160);
-  --muted: oklch(0.962 0.008 155);
-  --muted-foreground: oklch(0.49 0.025 165);
-  --accent: oklch(0.94 0.03 155);
-  --accent-foreground: oklch(0.32 0.08 157);
-  --border: oklch(0.91 0.014 155);
-  --input: oklch(0.89 0.018 155);
-  --ring: oklch(0.56 0.11 157);
-  --sidebar: oklch(0.995 0.003 155);
+  --secondary: oklch(0.94 0.03 158);
+  --secondary-foreground: oklch(0.28 0.06 160);
+  --muted: oklch(0.958 0.012 158);
+  --muted-foreground: oklch(0.47 0.03 165);
+  --accent: oklch(0.93 0.045 156);
+  --accent-foreground: oklch(0.3 0.085 160);
+  --border: oklch(0.9 0.02 158);
+  --input: oklch(0.88 0.022 158);
+  --ring: oklch(0.55 0.12 158);
+  --sidebar: oklch(0.995 0.004 158);
   --sidebar-foreground: var(--foreground);
   --sidebar-primary: var(--primary);
   --sidebar-primary-foreground: var(--primary-foreground);
@@ -71,14 +71,16 @@
   --sidebar-accent-foreground: var(--accent-foreground);
   --sidebar-border: var(--border);
   --sidebar-ring: var(--ring);
-  --success: oklch(0.48 0.12 155);
-  --soft-green: oklch(0.95 0.035 155);
-  --welcome: oklch(0.965 0.025 155);
-  --chart-1: oklch(0.45 0.12 157);
-  --chart-2: oklch(0.61 0.11 180);
-  --chart-3: oklch(0.66 0.10 205);
-  --chart-4: oklch(0.73 0.12 105);
-  --chart-5: oklch(0.68 0.14 75);
+  --success: oklch(0.55 0.14 155);
+  --soft-green: oklch(0.94 0.05 155);
+  --welcome: oklch(0.95 0.04 158);
+  --chart-1: oklch(0.42 0.11 160);
+  --chart-2: oklch(0.62 0.15 150);
+  --chart-3: oklch(0.62 0.12 220);
+  --chart-4: oklch(0.76 0.15 85);
+  --chart-5: oklch(0.65 0.17 35);
+  --gradient-hero: linear-gradient(135deg, oklch(0.3 0.08 162), oklch(0.44 0.12 152));
+  --shadow-card: 0 1px 2px oklch(0.25 0.04 165 / 0.04), 0 8px 24px -12px oklch(0.25 0.06 165 / 0.12);
 }
 
 .dark {
@@ -824,25 +826,74 @@ h1 {
 }
 
 .timer-section {
-  padding: 24px;
+  padding: 28px;
   border: 1px solid var(--border);
-  border-radius: 16px;
+  border-radius: 20px;
   background: var(--card);
-  box-shadow: 0 3px 12px oklch(0.25 0.035 165 / 0.025);
+  box-shadow: var(--shadow-card);
 }
 
 .timer-display {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 14px;
+  margin-top: 18px;
+  padding: 32px 20px;
+  border-radius: 18px;
+  background: var(--gradient-hero);
+  color: var(--primary-foreground);
+  text-align: center;
+  box-shadow: 0 18px 40px -18px oklch(0.3 0.09 160 / 0.55);
+}
+
+.timer-display > span {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  opacity: 0.8;
 }
 
 .timer-display > strong {
-  color: var(--foreground);
-  font-size: clamp(42px, 7vw, 76px);
-  font-weight: 650;
-  letter-spacing: -0.055em;
+  color: inherit;
+  font-size: clamp(48px, 9vw, 84px);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.04em;
   font-variant-numeric: tabular-nums;
+}
+
+.timer-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.timer-buttons > button {
+  min-width: 150px;
+  height: 46px;
+  border-radius: 12px;
+  font-weight: 650;
+}
+
+.timer-display .timer-buttons > button:first-child {
+  background: var(--primary-foreground);
+  color: var(--primary);
+}
+
+.timer-display .timer-buttons > button[data-variant="outline"],
+.timer-display .timer-buttons > button:nth-child(2) {
+  background: transparent;
+  color: var(--primary-foreground);
+  border: 1px solid oklch(1 0 0 / 0.45);
+}
+
+.timer-display .check-row {
+  color: inherit;
+  opacity: 0.92;
 }
 
 .record-row {
