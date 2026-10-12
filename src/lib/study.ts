@@ -10,6 +10,7 @@ export const kinds = [
   'goal',
   'review',
   'link',
+  'schedule',
 ] as const;
 
 const uuid = z.string().uuid();
@@ -152,6 +153,33 @@ const schemas = {
         'Selecione tópicos diferentes',
       ),
     confirmed: z.literal(true),
+  }),
+
+  schedule: z.object({
+    contest_id: uuid,
+    days: z.array(z.number().int().min(0).max(6)).min(1, 'Escolha ao menos um dia'),
+    minutes_per_day: z.coerce.number().int().min(15).max(960),
+    block_minutes: z.coerce.number().int().min(15).max(240),
+    start_time: z.string().regex(/^(\d{2}:\d{2})?$/).default(''),
+    review: z.boolean().default(true),
+    questions: z.boolean().default(true),
+    subjects: z
+      .array(z.object({ subject_id: uuid, priority: z.number().int().min(1).max(3) }))
+      .min(1, 'Escolha ao menos uma matéria'),
+    week_start: date,
+    blocks: z
+      .array(
+        z.object({
+          id: z.string().min(1),
+          date,
+          subject_id: uuid,
+          activity: z.enum(['theory', 'questions', 'review']),
+          minutes: z.coerce.number().int().positive(),
+          done: z.boolean().default(false),
+          session_id: uuid.nullable().default(null),
+        }),
+      )
+      .max(500),
   }),
 };
 
