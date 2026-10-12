@@ -1,5 +1,6 @@
 
 import { z } from 'zod';
+import { parseInput } from './study-validation';
 
 export const kinds = [
   'contest',
@@ -13,7 +14,8 @@ export const kinds = [
   'schedule',
 ] as const;
 
-const uuid = z.string().uuid();
+const uuid = z.string().uuid('Selecione um registro válido.');
+const optionalUuid = z.preprocess((value) => value === '' ? null : value, uuid.nullable().default(null));
 
 const count = z.coerce.number().int().nonnegative();
 
@@ -79,7 +81,7 @@ const schemas = {
   topic: z.object({
     name: z.string().trim().min(1, 'Informe o nome do tópico'),
     subject_id: uuid,
-    parent_id: uuid.nullable().default(null),
+    parent_id: optionalUuid,
     order: count.default(0),
     status: z
       .enum(['not_started', 'in_progress', 'completed', 'review'])
@@ -91,14 +93,14 @@ const schemas = {
     .object({
       contest_id: uuid,
       subject_id: uuid,
-      topic_id: uuid.nullable().default(null),
+      topic_id: optionalUuid,
       date,
       total: count.positive(),
       correct: count,
       wrong: count,
       blank: count,
       notes: z.string().default(''),
-      session_id: uuid.nullable().default(null),
+      session_id: optionalUuid,
     })
     .refine(
       (payload) =>
@@ -109,8 +111,8 @@ const schemas = {
   mock: z
     .object({
       contest_id: uuid,
-      subject_id: uuid.nullable().default(null),
-      topic_id: uuid.nullable().default(null),
+      subject_id: optionalUuid,
+      topic_id: optionalUuid,
       date,
       name: z.string().trim().min(1, 'Informe o nome do simulado'),
       rule: z.enum(['custom', 'contest', 'cebraspe']).default('custom'),
@@ -135,7 +137,7 @@ const schemas = {
     daily_hours: z.coerce.number().finite().nonnegative(),
     weekly_hours: z.coerce.number().finite().nonnegative(),
     questions: count.default(0),
-    contest_id: uuid.nullable().default(null),
+    contest_id: optionalUuid,
   }),
 
   review: z.object({
@@ -187,7 +189,7 @@ export function validatePayload(
   kind: (typeof kinds)[number],
   payload: unknown,
 ) {
-  return schemas[kind].parse(payload);
+  return parseInput(schemas[kind] as z.ZodType<unknown>, payload);
 }
 
 export type Payload = {

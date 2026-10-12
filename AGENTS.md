@@ -11,6 +11,7 @@
 
 - Study records use validated typed payloads in owner-scoped study_items; this keeps contest structures extensible without code changes.
 - Timer transitions execute atomically through an authenticated PostgreSQL function and a one-active-session unique index; server timestamps prevent duplicate minutes across devices.
+- Timer inputs are validated per action: only starting requires content identifiers; later transitions use the persisted session ID so reloads cannot invalidate saving.
 - Public content routes render a signed-out empty workspace and only fetch private data through authenticated server functions; this preserves SSR without exposing records.
 - Shared study is represented by explicit confirmed topic links and one session with multiple contest IDs; global totals must count each session once.
 - Official references are bundled as source-attributed extracted catalog data and explicitly imported transactionally; no study activity is seeded.

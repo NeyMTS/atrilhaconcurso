@@ -48,6 +48,7 @@ import {
   saveItem,
   deleteRecord,
   timerAction,
+  discardTimer,
   editSession,
   importCatalog,
   duplicateContest,
@@ -849,6 +850,7 @@ export function StudyView() {
 
   const timer = useServerFn(timerAction);
   const edit = useServerFn(editSession);
+  const discard = useServerFn(discardTimer);
 
   const [now, setNow] = useState(Date.now());
 
@@ -959,13 +961,11 @@ export function StudyView() {
         await timer({
           data: {
             action,
-            id: active?.id,
-            contest_ids: shared
-              ? sharedIds
-              : [cid],
-            subject_id: sid,
-            topic_id: tid || null,
-            notes,
+            ...(action === 'start' ? {
+              contest_ids: shared ? sharedIds : [cid],
+              subject_id: sid,
+              topic_id: tid || null,
+            } : { id: active?.id, notes }),
           },
         });
 
@@ -1153,6 +1153,12 @@ export function StudyView() {
                   <Square />
                   Finalizar
                 </Button>
+                <Button disabled={busy} variant="ghost" aria-label="Descartar sessão" title="Descartar sessão sem salvar horas" onClick={async () => {
+                  if (!window.confirm('Descartar esta sessão e zerar o cronômetro? Nenhuma hora desta sessão será salva.')) return;
+                  setBusy(true);
+                  try { await run(() => discard({ data: { id: active.id } }), 'Sessão descartada. Cronômetro zerado.'); }
+                  finally { setBusy(false); }
+                }}><Trash2 /> Descartar</Button>
               </>
             ) : (
               <Button
@@ -1304,9 +1310,7 @@ export function StudyView() {
                       setEditing(session);
                       setMinutes(
                         String(
-                          Number(
-                            session.elapsed_seconds,
-                          ) / 60,
+                               Number((Number(session.elapsed_seconds) / 60).toFixed(2)),
                         ),
                       );
                       setNotes(session.notes);
@@ -1482,7 +1486,7 @@ export function StudyView() {
               event.preventDefault();
 
               const seconds =
-                Number(minutes) * 60;
+                Number(minutes.replace(',', '.')) * 60;
 
               if (
                 !Number.isFinite(seconds) ||
@@ -1494,6 +1498,8 @@ export function StudyView() {
                 return;
               }
 
+              if (busy) return;
+              setBusy(true);
               void run(async () => {
                 await edit({
                   data: {
@@ -1504,7 +1510,7 @@ export function StudyView() {
                 });
 
                 setEditing(null);
-              });
+              }, 'Horas corrigidas').finally(() => setBusy(false));
             }}
           >
             <Field label="Tempo líquido em minutos">
@@ -1529,7 +1535,7 @@ export function StudyView() {
               />
             </Field>
 
-            <Button>Salvar correção</Button>
+            <Button disabled={busy}>Salvar correção</Button>
           </form>
         </Modal>
       )}
