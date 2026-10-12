@@ -1396,3 +1396,26 @@ h1 {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Visual refresh: colored metric accents */
+.dark {
+  --gradient-hero: linear-gradient(135deg, oklch(0.32 0.07 162), oklch(0.42 0.1 152));
+  --shadow-card: 0 8px 24px -12px oklch(0 0 0 / 0.5);
+}
+.metric-card {
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+.metric-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: var(--chart-1);
+}
+.metrics-grid > .metric-card:nth-child(2)::before { background: var(--chart-2); }
+.metrics-grid > .metric-card:nth-child(3)::before { background: var(--chart-3); }
+.metrics-grid > .metric-card:nth-child(4)::before { background: var(--chart-4); }
+.contest-card, .chart-panel, .weekly-summary, .subject-section, .catalog-card {
+  box-shadow: var(--shadow-card);
+}
