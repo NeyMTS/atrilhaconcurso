@@ -435,35 +435,15 @@ export const catalog = [
           },
           {
             "number": "10",
-            "name": "Princípios Básicos sobre o Uso da Força e Armas de Fogo (adotado pelo 8º Congresso das Nações Unidas para a Prevenção do Crime e o Tratamento dos Delinquentes, em Havana, Cuba, de"
-          },
-          {
-            "number": "27",
-            "name": "de agosto a"
-          },
-          {
-            "number": "07",
-            "name": "de setembro de 1990)."
+            "name": "Princípios Básicos sobre o Uso da Força e Armas de Fogo (adotado pelo 8º Congresso das Nações Unidas para a Prevenção do Crime e o Tratamento dos Delinquentes, em Havana, Cuba, de 27 de agosto a 07 de setembro de 1990)."
           },
           {
             "number": "11",
-            "name": "Lei nº 13.060, de"
-          },
-          {
-            "number": "22",
-            "name": "de dezembro de 2014 - Disciplina o uso dos instrumentos de menor potencial ofensivo pelos agentes de segurança pública, em todo o território nacional."
+            "name": "Lei nº 13.060, de 22 de dezembro de 2014 - Disciplina o uso dos instrumentos de menor potencial ofensivo pelos agentes de segurança pública, em todo o território nacional."
           },
           {
             "number": "12",
-            "name": "Decreto nº 12.341, de"
-          },
-          {
-            "number": "23",
-            "name": "de dezembro de 2024 - Regulamenta a Lei nº 13.060, de"
-          },
-          {
-            "number": "22",
-            "name": "de dezembro de 2014, para disciplinar o uso da força e dos instrumentos de menor potencial ofensivo pelos profissionais de segurança pública."
+            "name": "Decreto nº 12.341, de 23 de dezembro de 2024 - Regulamenta a Lei nº 13.060, de 22 de dezembro de 2014, para disciplinar o uso da força e dos instrumentos de menor potencial ofensivo pelos profissionais de segurança pública."
           }
         ],
         "official_text": "1 Direitos humanos na Constituição Federal de 1988. 2 Sistema internacional de proteção dos direitos humanos. 3 Convenção para a Prevenção e Punição ao Crime de Genocídio. 4 Convenção Relativa ao Estatuto dos Refugiados. Protocolo sobre o Estatuto dos Refugiados. 5 Convenção sobre a Eliminação de Todas as Formas de Discriminação Racial. 6 Convenção sobre a Eliminação de Todas as Formas de Discriminação contra a Mulher. 7 Convenção contra a Tortura e Outros Tratamentos ou Penas Cruéis, Desumanos ou Degradantes. 8 Convenção Internacional para a Proteção de Todas as Pessoas contra o Desaparecimento Forçado. 9 Regras mínimas da ONU para o tratamento de pessoas presas. 10 Princípios Básicos sobre o Uso da Força e Armas de Fogo (adotado pelo 8º Congresso das Nações Unidas para a Prevenção do Crime e o Tratamento dos Delinquentes, em Havana, Cuba, de 27 de agosto a 07 de setembro de 1990). 11 Lei nº 13.060, de 22 de dezembro de 2014 - Disciplina o uso dos instrumentos de menor potencial ofensivo pelos agentes de segurança pública, em todo o território nacional. 12. Decreto nº 12.341, de 23 de dezembro de 2024 - Regulamenta a Lei nº 13.060, de 22 de dezembro de 2014, para disciplinar o uso da força e dos instrumentos de menor potencial ofensivo pelos profissionais de segurança pública."
@@ -1205,11 +1185,7 @@ export const catalog = [
           },
           {
             "number": "12",
-            "name": "Norma Brasileira de Contabilidade - NBC TSP Estrutura Conceitual, de"
-          },
-          {
-            "number": "23",
-            "name": "de setembro de 2016."
+            "name": "Norma Brasileira de Contabilidade - NBC TSP Estrutura Conceitual, de 23 de setembro de 2016."
           }
         ],
         "official_text": "1 Conceitos, objetivos e finalidades da contabilidade. 2 Patrimônio: componentes, equação fundamental do patrimônio, situação líquida, representação gráfica. 3 Atos e fatos administrativos: conceitos, fatos permutativos, modificativos e mistos. 4 Contas: conceitos, contas de débitos, contas de créditos e saldos. 5 Plano de contas: conceitos, elenco de contas, função e funcionamento das contas. 6 Escrituração: conceitos, lançamentos contábeis, elementos essenciais, fórmulas de lançamentos, livros de escrituração, métodos e processos, regime de competência e regime de caixa. 7 Contabilização de operações contábeis diversas: juros, descontos, tributos, aluguéis, variação monetária/ cambial, folha de pagamento, compras, vendas e provisões, depreciações e baixa de bens. 8 Balancete de verificação: conceitos, modelos e técnicas de elaboração. 9 Balanço patrimonial: conceitos, objetivo, composição. 10 Demonstração de resultado de exercício: conceito, objetivo, composição. 11 Lei nº 6.404/1976 e suas alterações, legislação complementar e pronunciamentos do Comitê de Pronunciamentos Contábeis (CPC). 12 Norma Brasileira de Contabilidade - NBC TSP Estrutura Conceitual, de 23 de setembro de 2016."
@@ -1648,7 +1624,7 @@ export const catalog = [
         "official_text": "1 O Brasil político: nação e território. 2 Organização do Estado Brasileiro. 3 A divisão inter- regional do trabalho e da produção no Brasil. 4 A estrutura urbana brasileira e as grandes metrópoles. 5 Distribuição espacial da população no Brasil e movimentos migratórios internos. 6 Integração entre indústria e estrutura urbana e setor agrícola no Brasil. 7 Rede de transporte no Brasil: modais e principais infraestruturas 8 A integração do Brasil ao processo de internacionalização da economia. 9 Geografia e gestão ambiental. 10 Macrodivisão natural do espaço brasileiro: biomas, domínios e ecossistemas."
       },
       {
-        "name": " Língua Estrangeira (Inglês Ou Espanhol)",
+        "name": "Língua Inglesa (alternativa à Espanhola)",
         "topics": [
           {
             "number": "1",
@@ -1656,13 +1632,13 @@ export const catalog = [
           },
           {
             "number": "2",
-            "name": "Itens gramaticais relevantes para a compreensão dos conteúdos semânticos. II LÍNGUA"
+            "name": "Itens gramaticais relevantes para a compreensão dos conteúdos semânticos."
           }
         ],
-        "official_text": "I LÍNGUA INGLESA: 1 Compreensão de texto escrito em língua inglesa. 2 Itens gramaticais relevantes para a compreensão dos conteúdos semânticos. II LÍNGUA"
+        "official_text": "I LÍNGUA INGLESA: 1 Compreensão de texto escrito em língua inglesa. 2 Itens gramaticais relevantes para a compreensão dos conteúdos semânticos."
       },
       {
-        "name": "Espanhola",
+        "name": "Língua Espanhola (alternativa à Inglesa)",
         "topics": [
           {
             "number": "1",
