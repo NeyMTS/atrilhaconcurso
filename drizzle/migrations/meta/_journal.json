@@ -1,0 +1,34 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1791804431356,
+      "tag": "0000_study_core",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791804498816,
+      "tag": "0001_study_validation_and_backup",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791804928772,
+      "tag": "0002_study_integrity_hardening",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1791805054240,
+      "tag": "0003_study_references",
+      "breakpoints": true
+    }
+  ]
+}
