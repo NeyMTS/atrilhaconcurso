@@ -15,3 +15,5 @@
 - Shared study is represented by explicit confirmed topic links and one session with multiple contest IDs; global totals must count each session once.
 - Official references are bundled as source-attributed extracted catalog data and explicitly imported transactionally; no study activity is seeded.
 - Backup restoration is an authenticated transactional merge by stable IDs; existing records are never silently replaced.
+
+- Institutional marks are rendered by the shared InstitutionMark component from source-attributed official asset pointers, with an icon fallback; this prevents fabricated branding across contest views.
