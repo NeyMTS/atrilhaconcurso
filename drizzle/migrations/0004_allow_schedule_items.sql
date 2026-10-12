@@ -1,0 +1,2 @@
+DO $$ DECLARE c text; BEGIN SELECT conname INTO c FROM pg_constraint WHERE conrelid='public.study_items'::regclass AND contype='c' AND pg_get_constraintdef(oid) LIKE '%kind%'; IF c IS NOT NULL THEN EXECUTE format('ALTER TABLE public.study_items DROP CONSTRAINT %I', c); END IF; END $$;
+ALTER TABLE public.study_items ADD CONSTRAINT study_items_kind_check CHECK (kind = ANY (ARRAY['contest','subject','topic','questions','mock','goal','review','link','schedule']));

@@ -8,3 +8,7 @@
 - [ ] Metas históricas, revisões, gráficos e resumo semanal
 - [ ] Backup JSON/CSV e restauração validada
 - [x] Verificação funcional e telas móvel/desktop
+- [x] Brasão oficial da PRF (imagem enviada pelo usuário)
+- [x] Cronograma semanal integrado ao cronômetro
+- [x] Brasão oficial da PRF nos cartões
+- [x] Cronograma semanal integrado ao cronômetro
