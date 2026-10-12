@@ -3,7 +3,7 @@ import pfAsset from '@/assets/pf-official.png.asset.json';
 import prfAsset from '@/assets/prf-official.png.asset.json';
 
 // PF source: https://www.gov.br/pf/pt-br/principios-fundamentais/simbolos-da-policia-federal-2/emblema.png/image_view_fullscreen
-// PRF source: https://commons.wikimedia.org/wiki/File:Coat_of_arms_of_the_Brazilian_Federal_Highway_Police.svg
+// PRF source: official PRF badge supplied by the user
 export function InstitutionMark({ agency }: { agency: string }) {
   const n = agency.trim().toLowerCase();
   const isPRF = n === 'prf' || /^prf\b/.test(n) || /rodovi[aá]ria federal/.test(n);

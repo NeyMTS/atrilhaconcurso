@@ -18,3 +18,4 @@
 
 - Institutional marks are rendered by the shared InstitutionMark component from source-attributed official asset pointers, with an icon fallback; this prevents fabricated branding across contest views.
 - Weekly schedules are one owner-scoped study_items row of kind 'schedule' holding config plus blocks; completion links existing timer sessions instead of creating study time, so hours are never duplicated.
+- Weekly schedules are one owner-scoped study_items row of kind 'schedule' holding config plus blocks; completion links existing timer sessions instead of creating study time, so hours are never duplicated.
