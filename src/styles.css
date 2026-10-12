@@ -1450,3 +1450,7 @@ h1 {
   box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 18%, transparent);
   outline: none;
 }
+@media (max-width: 570px) {
+  .topbar .breadcrumb { display: none; }
+  .topbar { justify-content: space-between; }
+}
