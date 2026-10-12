@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CronogramaRouteImport } from './routes/cronograma'
 import { Route as EditalRouteImport } from './routes/edital'
 import { Route as EstudarRouteImport } from './routes/estudar'
 import { Route as EvolucaoRouteImport } from './routes/evolucao'
@@ -17,6 +18,11 @@ import { Route as EvolucaoRouteImport } from './routes/evolucao'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CronogramaRoute = CronogramaRouteImport.update({
+  id: '/cronograma',
+  path: '/cronograma',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EditalRoute = EditalRouteImport.update({
@@ -37,12 +43,14 @@ const EvolucaoRoute = EvolucaoRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/cronograma': typeof CronogramaRoute
   '/edital': typeof EditalRoute
   '/estudar': typeof EstudarRoute
   '/evolucao': typeof EvolucaoRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/cronograma': typeof CronogramaRoute
   '/edital': typeof EditalRoute
   '/estudar': typeof EstudarRoute
   '/evolucao': typeof EvolucaoRoute
@@ -50,20 +58,22 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/cronograma': typeof CronogramaRoute
   '/edital': typeof EditalRoute
   '/estudar': typeof EstudarRoute
   '/evolucao': typeof EvolucaoRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/edital' | '/estudar' | '/evolucao'
+  fullPaths: '/' | '/cronograma' | '/edital' | '/estudar' | '/evolucao'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/edital' | '/estudar' | '/evolucao'
-  id: '__root__' | '/' | '/edital' | '/estudar' | '/evolucao'
+  to: '/' | '/cronograma' | '/edital' | '/estudar' | '/evolucao'
+  id: '__root__' | '/' | '/cronograma' | '/edital' | '/estudar' | '/evolucao'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CronogramaRoute: typeof CronogramaRoute
   EditalRoute: typeof EditalRoute
   EstudarRoute: typeof EstudarRoute
   EvolucaoRoute: typeof EvolucaoRoute
@@ -76,6 +86,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cronograma': {
+      id: '/cronograma'
+      path: '/cronograma'
+      fullPath: '/cronograma'
+      preLoaderRoute: typeof CronogramaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/edital': {
@@ -104,6 +121,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CronogramaRoute: CronogramaRoute,
   EditalRoute: EditalRoute,
   EstudarRoute: EstudarRoute,
   EvolucaoRoute: EvolucaoRoute,
