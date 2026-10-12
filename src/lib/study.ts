@@ -1,0 +1,25 @@
+import { z } from 'zod';
+export const kinds = ['contest','subject','topic','questions','mock','goal','review','link'] as const;
+const uuid=z.string().uuid(); const count=z.coerce.number().int().nonnegative();
+const schemas={
+ contest:z.object({name:z.string().min(1),agency:z.string().default(''),role:z.string().default(''),board:z.string().default(''),year:z.coerce.number().int().nullable().default(null),status:z.string().default('Pendente de verificação'),source:z.string().default(''),verification:z.string().default('Pendente de verificação'),archived:z.boolean().default(false),correct_value:z.coerce.number().default(1),wrong_value:z.coerce.number().default(0),blank_value:z.coerce.number().default(0),elimination:z.string().default('')}),
+ subject:z.object({name:z.string().min(1),contest_id:uuid,order:count.default(0)}),
+ topic:z.object({name:z.string().min(1),subject_id:uuid,parent_id:uuid.nullable().default(null),order:count.default(0),status:z.enum(['not_started','in_progress','completed','review']).default('not_started'),estimated_hours:z.coerce.number().nonnegative().default(0)}),
+ questions:z.object({contest_id:uuid,subject_id:uuid,topic_id:uuid.nullable().default(null),date:z.string().regex(/^\d{4}-\d{2}-\d{2}$/),total:count.positive(),correct:count,wrong:count,blank:count,notes:z.string().default(''),session_id:uuid.nullable().default(null)}).refine(p=>p.correct+p.wrong+p.blank===p.total,'Acertos + erros + brancos devem ser iguais ao total'),
+ mock:z.object({contest_id:uuid,subject_id:uuid.nullable().default(null),topic_id:uuid.nullable().default(null),date:z.string().regex(/^\d{4}-\d{2}-\d{2}$/),name:z.string().min(1),total:count.positive(),correct:count,wrong:count,blank:count,correct_value:z.coerce.number(),wrong_value:z.coerce.number(),blank_value:z.coerce.number(),elimination:z.string().default(''),notes:z.string().default('')}).refine(p=>p.correct+p.wrong+p.blank===p.total,'Acertos + erros + brancos devem ser iguais ao total'),
+ goal:z.object({date:z.string().regex(/^\d{4}-\d{2}-\d{2}$/),daily_hours:z.coerce.number().nonnegative(),weekly_hours:z.coerce.number().nonnegative(),questions:count.default(0),contest_id:uuid.nullable().default(null)}),
+ review:z.object({topic_id:uuid,date:z.string().regex(/^\d{4}-\d{2}-\d{2}$/),done:z.boolean().default(false)}),
+ link:z.object({topic_ids:z.array(uuid).min(2),confirmed:z.literal(true)}),
+};
+export function validatePayload(kind:typeof kinds[number],payload:unknown){return schemas[kind].parse(payload)}
+export type Item={id:string;kind:typeof kinds[number];payload:Record<string,any>;created_at:string};
+export type Session={id:string;contest_ids:string[];subject_id:string;topic_id:string|null;state:string;started_at:string;running_since:string|null;elapsed_seconds:number;finished_at:string|null;pauses:any;notes:string};
+export type Snapshot={items:Item[];sessions:Session[];profile:{display_name:string;avatar_url:string|null;preferences:any}|null};
+export const empty:Snapshot={items:[],sessions:[],profile:null};
+export function questionStats(rows:Item[]){const sum=(k:string)=>rows.reduce((s,r)=>s+Number(r.payload[k]||0),0); const total=sum('total'),correct=sum('correct'),wrong=sum('wrong'),blank=sum('blank');return {total,correct,wrong,blank,answered:correct+wrong,rate:correct+wrong?correct/(correct+wrong)*100:null,percentage:total?correct/total*100:null}}
+export const score=(p:Record<string,any>)=>p.correct*p.correct_value+p.wrong*p.wrong_value+p.blank*p.blank_value;
+export function elapsed(s:Session,now=Date.now()){return Number(s.elapsed_seconds)+(s.state==='running'&&s.running_since?Math.max(0,(now-Date.parse(s.running_since))/1000):0)}
+export function clock(seconds:number){const n=Math.floor(seconds);return [Math.floor(n/3600),Math.floor(n%3600/60),n%60].map(x=>String(x).padStart(2,'0')).join(':')}
+export function hours(seconds:number){const m=Math.floor(seconds/60);return `${Math.floor(m/60)}h ${String(m%60).padStart(2,'0')}min`}
+export function day(d=new Date()){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+export function secondsOnDay(s:Session,date:string){let cursor=Date.parse(s.started_at);const end=s.finished_at?Date.parse(s.finished_at):Date.now();const intervals:[number,number][]=[];for(const p of s.pauses||[]){intervals.push([cursor,Date.parse(p.start)]);cursor=p.end?Date.parse(p.end):end}intervals.push([cursor,end]);const a=new Date(date+'T00:00:00').getTime(),b=new Date(date+'T00:00:00');b.setDate(b.getDate()+1);const raw=intervals.reduce((v,[x,y])=>v+Math.max(0,Math.min(y,b.getTime())-Math.max(x,a))/1000,0);const actual=intervals.reduce((v,[x,y])=>v+Math.max(0,y-x)/1000,0);return actual?raw*elapsed(s)/actual:0}
