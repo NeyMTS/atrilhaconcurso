@@ -12,12 +12,13 @@ const schemas={
  link:z.object({topic_ids:z.array(uuid).min(2),confirmed:z.literal(true)}),
 };
 export function validatePayload(kind:typeof kinds[number],payload:unknown){return schemas[kind].parse(payload)}
-export type Item={id:string;kind:typeof kinds[number];payload:Record<string,any>;created_at:string};
+export type Payload={name?:any;agency?:any;role?:any;board?:any;year?:any;status?:any;source?:any;verification?:any;archived?:any;correct_value?:any;wrong_value?:any;blank_value?:any;elimination?:any;contest_id?:any;subject_id?:any;topic_id?:any;parent_id?:any;order?:any;estimated_hours?:any;date?:any;total?:any;correct?:any;wrong?:any;blank?:any;notes?:any;session_id?:any;daily_hours?:any;weekly_hours?:any;questions?:any;done?:any;topic_ids?:any;confirmed?:any;rule?:any;[key:string]:any};
+export type Item={id:string;kind:typeof kinds[number];payload:Payload;created_at:string};
 export type Session={id:string;contest_ids:string[];subject_id:string;topic_id:string|null;state:string;started_at:string;running_since:string|null;elapsed_seconds:number;finished_at:string|null;pauses:any;notes:string};
 export type Snapshot={items:Item[];sessions:Session[];profile:{display_name:string;avatar_url:string|null;preferences:any}|null};
 export const empty:Snapshot={items:[],sessions:[],profile:null};
 export function questionStats(rows:Item[]){const sum=(k:string)=>rows.reduce((s,r)=>s+Number(r.payload[k]||0),0); const total=sum('total'),correct=sum('correct'),wrong=sum('wrong'),blank=sum('blank');return {total,correct,wrong,blank,answered:correct+wrong,rate:correct+wrong?correct/(correct+wrong)*100:null,percentage:total?correct/total*100:null}}
-export const score=(p:Record<string,any>)=>p.correct*p.correct_value+p.wrong*p.wrong_value+p.blank*p.blank_value;
+export const score=(p:Payload)=>p.correct*p.correct_value+p.wrong*p.wrong_value+p.blank*p.blank_value;
 export function elapsed(s:Session,now=Date.now()){return Number(s.elapsed_seconds)+(s.state==='running'&&s.running_since?Math.max(0,(now-Date.parse(s.running_since))/1000):0)}
 export function clock(seconds:number){const n=Math.floor(seconds);return [Math.floor(n/3600),Math.floor(n%3600/60),n%60].map(x=>String(x).padStart(2,'0')).join(':')}
 export function hours(seconds:number){const m=Math.floor(seconds/60);return `${Math.floor(m/60)}h ${String(m%60).padStart(2,'0')}min`}
