@@ -1,6 +1,7 @@
 import { z } from 'zod';
 export const kinds = ['contest','subject','topic','questions','mock','goal','review','link'] as const;
 const uuid=z.string().uuid(); const count=z.coerce.number().int().nonnegative();
+const date=z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine(v=>{const d=new Date(v+'T00:00:00Z');return Number.isFinite(d.getTime())&&d.toISOString().slice(0,10)===v},'Data inválida');
 const schemas={
  contest:z.object({name:z.string().min(1),agency:z.string().default(''),role:z.string().default(''),board:z.string().default(''),year:z.coerce.number().int().nullable().default(null),status:z.string().default('Pendente de verificação'),source:z.string().default(''),verification:z.string().default('Pendente de verificação'),archived:z.boolean().default(false),correct_value:z.coerce.number().default(1),wrong_value:z.coerce.number().default(0),blank_value:z.coerce.number().default(0),elimination:z.string().default('')}),
  subject:z.object({name:z.string().min(1),contest_id:uuid,order:count.default(0)}),
@@ -9,7 +10,7 @@ const schemas={
  mock:z.object({contest_id:uuid,subject_id:uuid.nullable().default(null),topic_id:uuid.nullable().default(null),date:z.string().regex(/^\d{4}-\d{2}-\d{2}$/),name:z.string().min(1),total:count.positive(),correct:count,wrong:count,blank:count,correct_value:z.coerce.number(),wrong_value:z.coerce.number(),blank_value:z.coerce.number(),elimination:z.string().default(''),notes:z.string().default('')}).refine(p=>p.correct+p.wrong+p.blank===p.total,'Acertos + erros + brancos devem ser iguais ao total'),
  goal:z.object({date:z.string().regex(/^\d{4}-\d{2}-\d{2}$/),daily_hours:z.coerce.number().nonnegative(),weekly_hours:z.coerce.number().nonnegative(),questions:count.default(0),contest_id:uuid.nullable().default(null)}),
  review:z.object({topic_id:uuid,date:z.string().regex(/^\d{4}-\d{2}-\d{2}$/),done:z.boolean().default(false)}),
- link:z.object({topic_ids:z.array(uuid).min(2),confirmed:z.literal(true)}),
+  link:z.object({topic_ids:z.array(uuid).min(2).refine(ids=>new Set(ids).size===ids.length,'Selecione tópicos diferentes'),confirmed:z.literal(true)}),
 };
 export function validatePayload(kind:typeof kinds[number],payload:unknown){return schemas[kind].parse(payload)}
 export type Payload={name?:any;agency?:any;role?:any;board?:any;year?:any;status?:any;source?:any;verification?:any;archived?:any;correct_value?:any;wrong_value?:any;blank_value?:any;elimination?:any;contest_id?:any;subject_id?:any;topic_id?:any;parent_id?:any;order?:any;estimated_hours?:any;date?:any;total?:any;correct?:any;wrong?:any;blank?:any;notes?:any;session_id?:any;daily_hours?:any;weekly_hours?:any;questions?:any;done?:any;topic_ids?:any;confirmed?:any;rule?:any;[key:string]:any};
