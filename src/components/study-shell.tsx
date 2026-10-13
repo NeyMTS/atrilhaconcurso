@@ -20,6 +20,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { useStudies } from './study-provider';
 import { AccountDialog } from './study-views';
+import appIcon from '@/assets/atrilha-icon.png.asset.json';
 
 const nav = [
   { to: '/', label: 'Início', icon: House },
@@ -78,9 +79,7 @@ export function StudyShell({
           className="brand"
           aria-label="AtrilhaConcurso — página inicial"
         >
-          <span className="brand-mark">
-            <BookOpen size={22} strokeWidth={2.2} />
-          </span>
+          <img className="brand-mark app-brand-icon" src={appIcon.url} alt="" />
 
           <span className="brand-copy">
             <strong>AtrilhaConcurso</strong>
@@ -176,9 +175,7 @@ export function StudyShell({
       <div className="main-shell">
         <header className="topbar">
           <Link to="/" className="mobile-brand">
-            <span className="brand-mark">
-              <BookOpen size={19} />
-            </span>
+            <img className="brand-mark app-brand-icon" src={appIcon.url} alt="" />
             <strong>AtrilhaConcurso</strong>
           </Link>
 

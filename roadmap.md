@@ -1,4 +1,5 @@
 # Central de estudos
+- [x] Aplicar ícone enviado pelo usuário e ocultar marca da Lovable
 - [x] Corrigir salvamentos, zerar cronômetro ativo e testar correção/exclusão de horas
 - [x] Atualização visual azul, boas-vindas sem ilustração e logotipos oficiais
 - [x] Conferência visual das quatro telas e controles em celular e computador

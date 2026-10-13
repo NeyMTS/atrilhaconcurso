@@ -216,6 +216,12 @@
   box-shadow: var(--shadow-card);
 }
 
+.app-brand-icon {
+  object-fit: contain;
+  background: transparent;
+  box-shadow: none;
+}
+
 .brand-copy {
   display: flex;
   min-width: 0;
