@@ -1,5 +1,5 @@
 # Central de estudos
-- [ ] Corrigir reorganização contínua do cronograma sem perdas e testar atrasos, repetição e semanas lotadas
+- [x] Corrigir reorganização contínua do cronograma sem perdas e testar atrasos, repetição e semanas lotadas
 - [x] Aplicar ícone enviado pelo usuário e ocultar marca da Lovable
 - [x] Corrigir salvamentos, zerar cronômetro ativo e testar correção/exclusão de horas
 - [x] Atualização visual azul, boas-vindas sem ilustração e logotipos oficiais

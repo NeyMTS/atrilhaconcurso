@@ -44,8 +44,8 @@ describe('cronograma', () => {
     const s = { ...plan, minutes_per_day: 180, blocks: [block('late', '2026-10-12'), block('future', '2026-10-14')], start_minutes: { future: 600 } };
     const now = new Date('2026-10-14T09:05:01');
     const r = rebalance(s, now);
-    expect(r.start_minutes?.late).toBe(546);
-    expect(r.start_minutes?.future).toBe(600);
+    expect(r.start_minutes?.['late']).toBe(546);
+    expect(r.start_minutes?.['future']).toBe(600);
     expect(blockTimes({ ...s, ...r }, '2026-10-14').map((x) => x.time)).toEqual(['09:06', '10:00']);
     expect(rebalance({ ...s, ...r }, now).moved).toBe(0);
   });
