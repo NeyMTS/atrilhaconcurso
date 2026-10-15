@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { generate, rebalance, weekDates } from '@/lib/schedule';
+import { blockTimes, generate, rebalance, weekDates } from '@/lib/schedule';
+import { validatePayload } from '@/lib/study';
 
 const a = '11111111-1111-4111-8111-111111111111';
 const b = '22222222-2222-4222-8222-222222222222';
@@ -29,7 +30,7 @@ describe('cronograma', () => {
   it('não usa horário já passado e avança para a semana seguinte quando lotada', () => {
     const s = { ...plan, blocks: [block('late', '2026-10-12', false, b), block('w1', '2026-10-14'), block('w2', '2026-10-14')] };
     const r = rebalance(s, new Date('2026-10-14T09:00:00'));
-    expect(r.blocks.find((x) => x.id === 'late')?.date).toBe('2026-10-19');
+    expect(r.blocks.find((x) => x.id === 'late')?.date).toBe('2026-10-21');
     expect(r.blocks.every((x) => x.date >= '2026-10-14')).toBe(true);
     expect(r.blocks.filter((x) => x.id === 'w1')).toHaveLength(1);
   });
@@ -38,5 +39,33 @@ describe('cronograma', () => {
     const r = rebalance(s, new Date('2026-10-13T12:00:00'));
     expect(r.blocks.find((x) => x.id === 'high')?.date).toBe('2026-10-14');
     expect(r.blocks.find((x) => x.id === 'low')?.date).toBe('2026-10-19');
+  });
+  it('usa apenas a parte restante de hoje, sem deslocar compromissos válidos', () => {
+    const s = { ...plan, minutes_per_day: 180, blocks: [block('late', '2026-10-12'), block('future', '2026-10-14')], start_minutes: { future: 600 } };
+    const now = new Date('2026-10-14T09:05:01');
+    const r = rebalance(s, now);
+    expect(r.start_minutes?.late).toBe(546);
+    expect(r.start_minutes?.future).toBe(600);
+    expect(blockTimes({ ...s, ...r }, '2026-10-14').map((x) => x.time)).toEqual(['09:06', '10:00']);
+    expect(rebalance({ ...s, ...r }, now).moved).toBe(0);
+  });
+  it('sem horário inicial não inventa disponibilidade hoje; bloco impossível permanece intacto', () => {
+    const s = { ...plan, start_time: '', blocks: [block('late', '2026-10-12'), { ...block('large', '2026-10-12'), minutes: 150 }] };
+    const r = rebalance(s, new Date('2026-10-14T08:00:00'));
+    expect(r.blocks[0]?.date).toBe('2026-10-19');
+    expect(r.blocks[1]).toEqual(s.blocks[1]);
+    expect(r.left).toBe(1);
+  });
+  it('semana cheia reserva também concluídos e mantém dados e horários após salvar/restaurar', () => {
+    const s = { ...plan, blocks: [block('late', '2026-10-12'), block('complete', '2026-10-14', true), block('future', '2026-10-14'), block('next1', '2026-10-19'), block('next2', '2026-10-19')] };
+    const before = structuredClone(s);
+    const r = rebalance(s, new Date('2026-10-13T12:00:00'));
+    expect(r.blocks[0]?.date).toBe('2026-10-21');
+    expect(r.blocks.slice(1)).toEqual(s.blocks.slice(1));
+    expect(s).toEqual(before);
+    const restored = validatePayload('schedule', JSON.parse(JSON.stringify({ ...s, ...r }))) as typeof s & { start_minutes?: Record<string, number> };
+    expect(restored.blocks).toEqual(r.blocks);
+    expect(restored.start_minutes).toEqual(r.start_minutes);
+    expect(rebalance(restored, new Date('2026-10-13T12:00:00')).moved).toBe(0);
   });
 });

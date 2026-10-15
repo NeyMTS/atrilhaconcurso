@@ -20,7 +20,7 @@ export type ScheduleConfig = {
   questions: boolean;
   subjects: { subject_id: string; priority: number }[];
 };
-export type Schedule = ScheduleConfig & { week_start: string; blocks: Block[]; start_minutes?: Record<string, number> };
+export type Schedule = ScheduleConfig & { week_start: string; blocks: Block[]; start_minutes?: Record<string, number> | undefined };
 
 export const activityLabels: Record<Activity, string> = {
   theory: 'Teoria',
