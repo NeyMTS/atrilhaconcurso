@@ -19,4 +19,4 @@
 
 - Institutional marks are rendered by the shared InstitutionMark component from source-attributed official asset pointers, with an icon fallback; this prevents fabricated branding across contest views.
 - Weekly schedules are one owner-scoped study_items row of kind 'schedule' holding config plus blocks; completion links existing timer sessions instead of creating study time, so hours are never duplicated.
-- Weekly schedules are one owner-scoped study_items row of kind 'schedule' holding config plus blocks; completion links existing timer sessions instead of creating study time, so hours are never duplicated.
+- Schedule rebalancing reserves valid future appointments and completed slots before placing overdue tasks across weeks with stable block IDs and optional start_minutes; this preserves history and prevents overlapping or duplicated tasks, including on repeated runs. Without a configured start time, today is skipped rather than inventing remaining availability.

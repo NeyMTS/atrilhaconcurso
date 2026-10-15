@@ -169,6 +169,7 @@ const schemas = {
       .array(z.object({ subject_id: uuid, priority: z.number().int().min(1).max(3) }))
       .min(1, 'Escolha ao menos uma matéria'),
     week_start: date,
+    start_minutes: z.record(z.number().int().min(0).max(1439)).optional(),
     blocks: z
       .array(
         z.object({
