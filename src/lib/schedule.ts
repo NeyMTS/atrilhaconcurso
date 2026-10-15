@@ -20,7 +20,7 @@ export type ScheduleConfig = {
   questions: boolean;
   subjects: { subject_id: string; priority: number }[];
 };
-export type Schedule = ScheduleConfig & { week_start: string; blocks: Block[] };
+export type Schedule = ScheduleConfig & { week_start: string; blocks: Block[]; start_minutes?: Record<string, number> };
 
 export const activityLabels: Record<Activity, string> = {
   theory: 'Teoria',
@@ -66,10 +66,11 @@ export function generate(config: ScheduleConfig, start: string): Block[] {
     for (let i = 0; i < perDay; i++) {
       const isLast = i === perDay - 1 && perDay > 1;
       let activity: Activity = 'theory';
-      let subject = weighted[cursor % weighted.length]!;
+      let subject = weighted[cursor % weighted.length];
+      if (!subject) continue;
       if (config.review && isLast && studiedThisWeek.length) {
         activity = 'review';
-        subject = studiedThisWeek[blocks.length % studiedThisWeek.length]!;
+        subject = studiedThisWeek[blocks.length % studiedThisWeek.length] ?? subject;
       } else {
         if (config.questions && i % 3 === 2) activity = 'questions';
         cursor++;
@@ -81,25 +82,80 @@ export function generate(config: ScheduleConfig, start: string): Block[] {
   return blocks;
 }
 
-/** Moves pending blocks from past days to remaining study days that still have room. */
-export function rebalance(schedule: Schedule, today = day()) {
-  const future = weekDates(schedule.week_start).filter(
-    (d) => d >= today && schedule.days.includes(parse(d).getDay()),
-  );
-  const load = (d: string, blocks: Block[]) =>
-    blocks.filter((b) => b.date === d && !b.done).reduce((t, b) => t + b.minutes, 0);
-  const blocks = schedule.blocks.map((b) => ({ ...b }));
-  let moved = 0;
-  let left = 0;
-  for (const b of blocks) {
-    if (b.done || b.date >= today) continue;
-    const target = future.find((d) => load(d, blocks) + b.minutes <= schedule.minutes_per_day);
-    if (target) {
-      b.date = target;
-      moved++;
-    } else left++;
+/** Legacy blocks retain their original positions even when earlier tasks move away. */
+function positions(schedule: Schedule) {
+  const starts = { ...schedule.start_minutes };
+  const cursors: Record<string, number> = {};
+  const [h = 0, m = 0] = schedule.start_time.split(':').map(Number);
+  const beginning = h * 60 + m;
+  for (const b of schedule.blocks) {
+    const start = starts[b.id] ?? cursors[b.date] ?? beginning;
+    starts[b.id] = start;
+    cursors[b.date] = Math.max(cursors[b.date] ?? beginning, start + b.minutes);
   }
-  return { blocks, moved, left };
+  return starts;
+}
+
+/** Reserve valid appointments first, then place overdue/invalid tasks into real free gaps. */
+export function rebalance(schedule: Schedule, reference: Date | string = new Date()) {
+  const now = typeof reference === 'string' ? parse(reference) : reference;
+  const today = day(now);
+  const currentMinute = Math.ceil((now.getTime() - parse(today).getTime()) / 60000);
+  const [h = 0, m = 0] = schedule.start_time.split(':').map(Number);
+  const beginning = h * 60 + m;
+  const end = Math.min(1440, beginning + schedule.minutes_per_day);
+  const starts = positions(schedule);
+  const occupied = new Map<string, [number, number][]>();
+  const reserve = (date: string, start: number, minutes: number) => {
+    const intervals = occupied.get(date) ?? [];
+    intervals.push([start, start + minutes]);
+    intervals.sort((a, b) => a[0] - b[0]);
+    occupied.set(date, intervals);
+  };
+  const overlaps = (date: string, start: number, minutes: number) =>
+    (occupied.get(date) ?? []).some(([a, b]) => start < b && start + minutes > a);
+  const lowerBound = (date: string) => date === today ? Math.max(beginning, currentMinute) : beginning;
+  const availableDay = (date: string) => date >= today && schedule.days.includes(parse(date).getDay()) &&
+    (date !== today || Boolean(schedule.start_time));
+
+  // Completed records never change, and still occupy their original slots.
+  for (const b of schedule.blocks) if (b.done) reserve(b.date, starts[b.id] ?? beginning, b.minutes);
+  const pending: Block[] = [];
+  for (const b of schedule.blocks) {
+    if (b.done) continue;
+    const start = starts[b.id] ?? beginning;
+    if (availableDay(b.date) && start >= lowerBound(b.date) && start + b.minutes <= end && !overlaps(b.date, start, b.minutes))
+      reserve(b.date, start, b.minutes);
+    else pending.push(b);
+  }
+  const priority = new Map(schedule.subjects.map((s) => [s.subject_id, s.priority]));
+  pending.sort((a, b) => (priority.get(b.subject_id) ?? 0) - (priority.get(a.subject_id) ?? 0) || a.date.localeCompare(b.date));
+  const changes = new Map<string, Block>();
+  let left = 0;
+  for (const b of pending) {
+    // An indivisible task larger than the entire window cannot fit in any week.
+    if (!schedule.days.length || b.minutes > end - beginning || b.minutes <= 0) { left++; continue; }
+    const cursor = parse(today);
+    for (;;) {
+      const date = day(cursor);
+      if (availableDay(date)) {
+        let start = lowerBound(date);
+        for (const [a, z] of occupied.get(date) ?? []) {
+          if (z <= start) continue;
+          if (start + b.minutes <= a) break;
+          start = Math.max(start, z);
+        }
+        if (start + b.minutes <= end) {
+          changes.set(b.id, { ...b, date });
+          starts[b.id] = start;
+          reserve(date, start, b.minutes);
+          break;
+        }
+      }
+      cursor.setDate(cursor.getDate() + 1);
+    }
+  }
+  return { blocks: schedule.blocks.map((b) => changes.get(b.id) ?? b), start_minutes: changes.size ? starts : schedule.start_minutes, moved: changes.size, left };
 }
 
 /** Real studied seconds for a subject on a date, from timer sessions (never duplicated). */
@@ -118,13 +174,12 @@ export function matchSession(sessions: Session[], blocks: Block[], block: Block)
 }
 
 export function blockTimes(schedule: Schedule, date: string) {
-  const list = schedule.blocks.filter((b) => b.date === date);
+  const starts = positions(schedule);
+  const list = schedule.blocks.filter((b) => b.date === date).sort((a, b) => (starts[a.id] ?? 0) - (starts[b.id] ?? 0));
   if (!schedule.start_time) return list.map((b) => ({ block: b, time: '' }));
-  const [h = 0, m = 0] = schedule.start_time.split(':').map(Number);
-  let t = h * 60 + m;
   return list.map((b) => {
+    const t = starts[b.id] ?? 0;
     const time = `${String(Math.floor(t / 60) % 24).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`;
-    t += b.minutes;
     return { block: b, time };
   });
 }
