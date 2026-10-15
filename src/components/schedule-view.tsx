@@ -1,7 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from '@tanstack/react-router';
 import { useServerFn } from '@tanstack/react-start';
-import { CalendarDays, Check, Play, RefreshCw, Settings2, Trash2 } from 'lucide-react';
+import { CalendarDays, Check, ChevronLeft, ChevronRight, Play, RefreshCw, Settings2, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { useStudies } from './study-provider';
@@ -20,9 +20,15 @@ export function ScheduleView() {
   const item = data.items.find((i) => i.kind === 'schedule');
   const schedule = item?.payload as Schedule | undefined;
   const [editing, setEditing] = useState(false);
-  const today = day();
+  const [now, setNow] = useState(() => new Date());
+  const today = day(now);
   const [selected, setSelected] = useState(today);
   const [busy, setBusy] = useState(false);
+  const attempted = useRef('');
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(new Date()), 60000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   const subjectName = (id: string) => data.items.find((i) => i.id === id)?.payload.name ?? 'Matéria removida';
 
@@ -44,6 +50,16 @@ export function ScheduleView() {
 
   const updateBlocks = (blocks: Block[], message = '') => schedule && persist({ ...schedule, blocks }, message);
 
+  useEffect(() => {
+    if (!user || !schedule || busy || editing) return;
+    const key = JSON.stringify([item?.id, schedule, now.getTime()]);
+    if (attempted.current === key) return;
+    const result = rebalance(schedule, now);
+    if (!result.moved) return;
+    attempted.current = key;
+    void persist({ ...schedule, blocks: result.blocks, start_minutes: result.start_minutes }, 'Pendências reorganizadas');
+  }, [user, schedule, item?.id, now, busy, editing]);
+
   const header = (
     <div className="page-heading">
       <div>
@@ -63,15 +79,18 @@ export function ScheduleView() {
     return <>{header}<ScheduleSetup initial={schedule} busy={busy} onCancel={schedule ? () => setEditing(false) : undefined}
       onSave={async (config, regenerate) => {
         const start = weekStart();
-        const keep = schedule && !regenerate ? schedule.blocks : null;
-        const ok = await persist({ ...config, week_start: keep ? schedule!.week_start : start, blocks: keep ?? generate(config, start) });
+        const base: Schedule = schedule ? { ...schedule, ...config } : { ...config, week_start: start, blocks: generate(config, start) };
+        const result = !schedule || regenerate ? rebalance(base, new Date()) : null;
+        const ok = await persist(result ? { ...base, blocks: result.blocks, start_minutes: result.start_minutes } : base);
         if (ok) setEditing(false);
       }} /></>;
 
-  const dates = weekDates(schedule.week_start);
-  const total = schedule.blocks.length;
-  const done = schedule.blocks.filter((b) => b.done).length;
-  const overdue = schedule.blocks.filter((b) => !b.done && b.date < today).length;
+  const dates = weekDates(weekStart(new Date(`${selected}T00:00:00`)));
+  const weeklyBlocks = schedule.blocks.filter((b) => dates.includes(b.date));
+  const total = weeklyBlocks.length;
+  const done = weeklyBlocks.filter((b) => b.done).length;
+  const reorganized = rebalance(schedule, now);
+  const overdue = reorganized.moved + reorganized.left;
   const outdated = schedule.week_start < weekStart();
   const dayBlocks = blockTimes(schedule, selected);
   const planned = dayBlocks.reduce((t, x) => t + x.block.minutes, 0);
@@ -95,11 +114,16 @@ export function ScheduleView() {
     {(overdue > 0 || outdated) && <div className="schedule-alert">
       <span>{outdated ? 'Este plano é de uma semana anterior.' : `Você tem ${overdue} bloco(s) atrasado(s).`}</span>
       <div className="card-actions">
-        {overdue > 0 && !outdated && <Button size="sm" disabled={busy} onClick={() => { const r = rebalance(schedule, today); void updateBlocks(r.blocks, r.moved ? `${r.moved} bloco(s) redistribuído(s)${r.left ? `; ${r.left} não couberam` : ''}` : 'Sem espaço livre nos próximos dias'); }}><RefreshCw size={15} /> Reorganizar pendentes</Button>}
-        {outdated && <Button size="sm" disabled={busy} onClick={() => { const start = weekStart(); const pending = schedule.blocks.filter((b) => !b.done); const fresh = generate(schedule, start); void persist({ ...schedule, week_start: start, blocks: fresh }, `Nova semana gerada${pending.length ? ` (${pending.length} pendente(s) da anterior descartado(s))` : ''}`); setSelected(today); }}><RefreshCw size={15} /> Gerar semana atual</Button>}
+        {overdue > 0 && <Button size="sm" disabled={busy} onClick={() => { const r = rebalance(schedule, new Date()); if (r.moved) void persist({ ...schedule, blocks: r.blocks, start_minutes: r.start_minutes }, `${r.moved} bloco(s) redistribuído(s)${r.left ? `; ${r.left} excedem a disponibilidade diária` : ''}`); else toast.info('Há blocos maiores que a disponibilidade diária. Ajuste o plano para acomodá-los.'); }}><RefreshCw size={15} /> Reorganizar pendentes</Button>}
+        {outdated && <Button size="sm" disabled={busy} onClick={() => setSelected(today)}><CalendarDays size={15} /> Ver semana atual</Button>}
       </div>
     </div>}
 
+    <div className="card-actions">
+      <Button variant="ghost" size="icon" aria-label="Semana anterior" onClick={() => { const d = new Date(`${selected}T00:00:00`); d.setDate(d.getDate() - 7); setSelected(day(d)); }}><ChevronLeft size={16} /></Button>
+      <span>{dates[0]?.split('-').reverse().join('/')} – {dates[6]?.split('-').reverse().join('/')}</span>
+      <Button variant="ghost" size="icon" aria-label="Próxima semana" onClick={() => { const d = new Date(`${selected}T00:00:00`); d.setDate(d.getDate() + 7); setSelected(day(d)); }}><ChevronRight size={16} /></Button>
+    </div>
     <nav className="schedule-days" aria-label="Dias da semana">
       {dates.map((d) => {
         const list = schedule.blocks.filter((b) => b.date === d);
