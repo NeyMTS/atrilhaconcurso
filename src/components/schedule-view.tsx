@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from '@tanstack/react-router';
 import { useServerFn } from '@tanstack/react-start';
-import { CalendarDays, Check, ChevronLeft, ChevronRight, Play, RefreshCw, Settings2, Trash2 } from 'lucide-react';
+import { CalendarDays, Check, ChevronLeft, ChevronRight, Play, Plus, RefreshCw, Settings2, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { useStudies } from './study-provider';
-import { saveItem } from '@/lib/study.functions';
+import { deleteRecord, saveItem } from '@/lib/study.functions';
 import { day, hours } from '@/lib/study';
 import {
   activityLabels, blockTimes, generate, matchSession, rebalance, studiedSeconds,
@@ -17,6 +17,7 @@ const priorityLabels = ['', 'Baixa', 'Média', 'Alta'];
 export function ScheduleView() {
   const { data, user, login, refresh } = useStudies();
   const save = useServerFn(saveItem);
+  const remove = useServerFn(deleteRecord);
   const item = data.items.find((i) => i.kind === 'schedule');
   const schedule = item?.payload as Schedule | undefined;
   const [editing, setEditing] = useState(false);
@@ -67,14 +68,34 @@ export function ScheduleView() {
 
   if (!user) return <>{header}<div className="empty-state"><span className="empty-icon"><CalendarDays size={23} /></span><h3>Entre para montar seu cronograma</h3><p>O plano fica salvo na sua conta.</p><Button onClick={() => void login()}>Entrar com Google</Button></div></>;
 
+  const removeSchedule = async () => {
+    if (!item || !window.confirm('Excluir o cronograma inteiro? Suas horas estudadas no cronômetro continuam salvas.')) return;
+    setBusy(true);
+    try { await remove({ data: { id: item.id, session: false } }); await refresh(); setEditing(false); toast.success('Cronograma excluído'); }
+    catch (e) { toast.error(e instanceof Error ? e.message : 'Não foi possível excluir'); }
+    finally { setBusy(false); }
+  };
+
   if (!schedule || editing)
     return <>{header}<ScheduleSetup initial={schedule} busy={busy} onCancel={schedule ? () => setEditing(false) : undefined}
+      onDelete={schedule ? () => void removeSchedule() : undefined}
       onSave={async (config, regenerate) => {
         const start = weekStart();
-        const base: Schedule = schedule ? { ...schedule, ...config } : { ...config, week_start: start, blocks: generate(config, start) };
-        const result = !schedule || regenerate ? rebalance(base, new Date()) : null;
-        const ok = await persist(result ? { ...base, blocks: result.blocks, start_minutes: result.start_minutes } : base);
-        if (ok) setEditing(false);
+        if (!schedule) {
+          const base: Schedule = { ...config, week_start: start, blocks: generate(config, start) };
+          if (await persist(base)) setEditing(false);
+          return;
+        }
+        let next: Schedule = { ...schedule, ...config };
+        if (regenerate) {
+          const t = day(new Date());
+          const keep = schedule.blocks.filter((b) => b.done || b.date < t);
+          const fresh = generate(config, start).filter((b) => b.date >= t);
+          const ids = new Set(keep.map((b) => b.id));
+          const starts = Object.fromEntries(Object.entries(schedule.start_minutes ?? {}).filter(([id]) => ids.has(id)));
+          next = { ...next, week_start: start, blocks: [...keep, ...fresh], start_minutes: starts };
+        }
+        if (await persist(next)) setEditing(false);
       }} /></>;
 
   const dates = weekDates(weekStart(new Date(`${selected}T00:00:00`)));
@@ -137,8 +158,10 @@ export function ScheduleView() {
       })}
     </nav>
 
+    <AddBlock busy={busy} subjects={data.items.filter((i) => i.kind === 'subject' && i.payload.contest_id === schedule.contest_id)} date={selected}
+      onAdd={(b) => void updateBlocks([...schedule.blocks, b], 'Matéria adicionada ao dia')} />
     <section className="schedule-list">
-      {dayBlocks.length === 0 ? <div className="empty-state"><h3>Sem blocos neste dia</h3><p>Dia livre no seu plano.</p></div> :
+      {dayBlocks.length === 0 ? <div className="empty-state"><h3>Sem blocos neste dia</h3><p>Use “Adicionar matéria” acima para estudar neste dia.</p></div> :
         dayBlocks.map(({ block: b, time }) => <article key={b.id} className={`schedule-block${b.done ? ' done' : ''}`}>
           <button type="button" className="schedule-check" onClick={() => toggle(b)} disabled={busy} aria-label={b.done ? 'Marcar como pendente' : 'Marcar como concluído'}>{b.done && <Check size={16} />}</button>
           <div className="schedule-main">
@@ -157,8 +180,27 @@ export function ScheduleView() {
   </>;
 }
 
-function ScheduleSetup({ initial, busy, onSave, onCancel }: {
-  initial?: Schedule | undefined; busy: boolean; onCancel?: (() => void) | undefined; onSave: (c: ScheduleConfig, regenerate: boolean) => void;
+function AddBlock({ subjects, date, busy, onAdd }: { subjects: { id: string; payload: any }[]; date: string; busy: boolean; onAdd: (b: Block) => void }) {
+  const [open, setOpen] = useState(false);
+  const [sid, setSid] = useState('');
+  const [activity, setActivity] = useState<Activity>('theory');
+  const [minutes, setMinutes] = useState('50');
+  const m = Math.round(Number(minutes));
+  if (!open) return <div className="card-actions"><Button size="sm" variant="outline" onClick={() => setOpen(true)}><Plus size={15} /> Adicionar matéria neste dia</Button></div>;
+  return <div className="schedule-edit">
+    <select aria-label="Matéria" value={sid} onChange={(e) => setSid(e.target.value)}><option value="">Matéria</option>{subjects.map((s) => <option key={s.id} value={s.id}>{s.payload.name}</option>)}</select>
+    <select aria-label="Atividade" value={activity} onChange={(e) => setActivity(e.target.value as Activity)}>{(Object.keys(activityLabels) as Activity[]).map((a) => <option key={a} value={a}>{activityLabels[a]}</option>)}</select>
+    <input aria-label="Minutos" inputMode="numeric" style={{ width: 70 }} value={minutes} onChange={(e) => setMinutes(e.target.value)} />
+    <Button size="sm" disabled={busy || !sid || !(m >= 5 && m <= 600)} onClick={() => {
+      onAdd({ id: `m${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`, date, subject_id: sid, activity, minutes: m, done: false, session_id: null });
+      setOpen(false); setSid('');
+    }}>Adicionar</Button>
+    <Button size="sm" variant="ghost" onClick={() => setOpen(false)}>Cancelar</Button>
+  </div>;
+}
+
+function ScheduleSetup({ initial, busy, onSave, onCancel, onDelete }: {
+  initial?: Schedule | undefined; busy: boolean; onCancel?: (() => void) | undefined; onDelete?: (() => void) | undefined; onSave: (c: ScheduleConfig, regenerate: boolean) => void;
 }) {
   const { data } = useStudies();
   const contests = data.items.filter((i) => i.kind === 'contest' && !i.payload.archived);
@@ -207,6 +249,7 @@ function ScheduleSetup({ initial, busy, onSave, onCancel }: {
     {initial && <div className="check-row"><label><input type="checkbox" checked={regenerate} onChange={(e) => setRegenerate(e.target.checked)} /> Redistribuir os blocos desta semana com as novas regras</label></div>}
     {missing.length > 0 && <p className="form-note">Falta informar: {missing.join(', ')}.</p>}
     <div className="card-actions">
+      {onDelete && <Button variant="outline" disabled={busy} onClick={onDelete}><Trash2 size={15} /> Excluir cronograma</Button>}
       {onCancel && <Button variant="ghost" onClick={onCancel}>Cancelar</Button>}
       <Button disabled={busy || missing.length > 0} onClick={() => onSave({ contest_id: cid, days, minutes_per_day: minutes, block_minutes: Number(block), start_time: startTime, review, questions, subjects: chosen }, !initial || regenerate)}>
         {initial ? 'Salvar ajustes' : 'Gerar cronograma'}
