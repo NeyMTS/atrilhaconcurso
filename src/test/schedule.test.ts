@@ -27,12 +27,21 @@ describe('cronograma', () => {
     expect(again.moved).toBe(0);
     expect(weekDates('2026-10-12')).toHaveLength(7);
   });
-  it('não usa horário já passado e avança para a semana seguinte quando lotada', () => {
+  it('mantém blocos de hoje visíveis e avança atrasados para o próximo dia livre', () => {
     const s = { ...plan, blocks: [block('late', '2026-10-12', false, b), block('w1', '2026-10-14'), block('w2', '2026-10-14')] };
     const r = rebalance(s, new Date('2026-10-14T09:00:00'));
-    expect(r.blocks.find((x) => x.id === 'late')?.date).toBe('2026-10-21');
-    expect(r.blocks.every((x) => x.date >= '2026-10-14')).toBe(true);
+    expect(r.blocks.find((x) => x.id === 'w1')?.date).toBe('2026-10-14');
+    expect(r.blocks.find((x) => x.id === 'w2')?.date).toBe('2026-10-14');
+    expect(r.blocks.find((x) => x.id === 'late')!.date > '2026-10-14').toBe(true);
     expect(r.blocks.filter((x) => x.id === 'w1')).toHaveLength(1);
+  });
+  it('modo hora extra soma o atrasado a um dia que já tem cronograma', () => {
+    const s = { ...plan, blocks: [block('late', '2026-10-12', false, b), block('w1', '2026-10-14'), block('w2', '2026-10-14')] };
+    const r = rebalance(s, new Date('2026-10-14T09:00:00'), 'extra');
+    expect(r.blocks.find((x) => x.id === 'late')?.date).toBe('2026-10-14');
+    expect(r.blocks).toHaveLength(3);
+    const again = rebalance({ ...s, blocks: r.blocks, start_minutes: r.start_minutes }, new Date('2026-10-14T09:00:00'), 'extra');
+    expect(again.moved).toBe(0);
   });
   it('prioriza matéria mais importante na vaga mais próxima', () => {
     const s = { ...plan, blocks: [block('low', '2026-10-12', false, b), block('high', '2026-10-12', false, a), block('busy', '2026-10-14')] };
