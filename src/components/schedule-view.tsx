@@ -50,15 +50,7 @@ export function ScheduleView() {
 
   const updateBlocks = (blocks: Block[], message = '') => schedule && persist({ ...schedule, blocks }, message);
 
-  useEffect(() => {
-    if (!user || !schedule || busy || editing) return;
-    const key = JSON.stringify([item?.id, schedule, now.getTime()]);
-    if (attempted.current === key) return;
-    const result = rebalance(schedule, now);
-    if (!result.moved) return;
-    attempted.current = key;
-    void persist({ ...schedule, blocks: result.blocks, start_minutes: result.start_minutes }, 'Pendências reorganizadas');
-  }, [user, schedule, item?.id, now, busy, editing]);
+  void attempted;
 
   const header = (
     <div className="page-heading">
@@ -90,7 +82,13 @@ export function ScheduleView() {
   const total = weeklyBlocks.length;
   const done = weeklyBlocks.filter((b) => b.done).length;
   const reorganized = rebalance(schedule, now);
-  const overdue = reorganized.moved + reorganized.left;
+  const overdue = reorganized.pending;
+  const reorganize = (mode: 'move' | 'extra') => {
+    const r = rebalance(schedule, new Date(), mode);
+    if (!r.moved) { toast.info('Não há espaço disponível para encaixar os blocos. Ajuste o plano.'); return; }
+    const label = mode === 'extra' ? 'adicionado(s) como horas extras' : 'realocado(s) em novas datas';
+    void persist({ ...schedule, blocks: r.blocks, start_minutes: r.start_minutes }, `${r.moved} bloco(s) ${label}${r.left ? `; ${r.left} não couberam` : ''}`);
+  };
   const outdated = schedule.week_start < weekStart();
   const dayBlocks = blockTimes(schedule, selected);
   const planned = dayBlocks.reduce((t, x) => t + x.block.minutes, 0);
@@ -114,7 +112,10 @@ export function ScheduleView() {
     {(overdue > 0 || outdated) && <div className="schedule-alert">
       <span>{outdated ? 'Este plano é de uma semana anterior.' : `Você tem ${overdue} bloco(s) atrasado(s).`}</span>
       <div className="card-actions">
-        {overdue > 0 && <Button size="sm" disabled={busy} onClick={() => { const r = rebalance(schedule, new Date()); if (r.moved) void persist({ ...schedule, blocks: r.blocks, start_minutes: r.start_minutes }, `${r.moved} bloco(s) redistribuído(s)${r.left ? `; ${r.left} excedem a disponibilidade diária` : ''}`); else toast.info('Há blocos maiores que a disponibilidade diária. Ajuste o plano para acomodá-los.'); }}><RefreshCw size={15} /> Reorganizar pendentes</Button>}
+        {overdue > 0 && <>
+          <Button size="sm" variant="outline" disabled={busy} onClick={() => reorganize('extra')}><RefreshCw size={15} /> Somar como hora extra</Button>
+          <Button size="sm" disabled={busy} onClick={() => reorganize('move')}><RefreshCw size={15} /> Realocar em novas datas</Button>
+        </>}
         {outdated && <Button size="sm" disabled={busy} onClick={() => setSelected(today)}><CalendarDays size={15} /> Ver semana atual</Button>}
       </div>
     </div>}

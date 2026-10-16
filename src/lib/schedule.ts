@@ -97,7 +97,14 @@ function positions(schedule: Schedule) {
 }
 
 /** Reserve valid appointments first, then place overdue/invalid tasks into real free gaps. */
-export function rebalance(schedule: Schedule, reference: Date | string = new Date()) {
+export type RebalanceMode = 'move' | 'extra';
+
+/**
+ * 'move' places overdue tasks into free gaps within daily availability (advancing weeks if needed).
+ * 'extra' appends them as additional time after existing blocks on the next study days, round-robin.
+ * Today's blocks are never treated as overdue, so they stay visible for studying today.
+ */
+export function rebalance(schedule: Schedule, reference: Date | string = new Date(), mode: RebalanceMode = 'move') {
   const now = typeof reference === 'string' ? parse(reference) : reference;
   const today = day(now);
   const currentMinute = Math.ceil((now.getTime() - parse(today).getTime()) / 60000);
@@ -115,47 +122,74 @@ export function rebalance(schedule: Schedule, reference: Date | string = new Dat
   const overlaps = (date: string, start: number, minutes: number) =>
     (occupied.get(date) ?? []).some(([a, b]) => start < b && start + minutes > a);
   const lowerBound = (date: string) => date === today ? Math.max(beginning, currentMinute) : beginning;
-  const availableDay = (date: string) => date >= today && schedule.days.includes(parse(date).getDay()) &&
+  const studyDay = (date: string) => schedule.days.includes(parse(date).getDay());
+  const availableDay = (date: string) => date >= today && studyDay(date) &&
     (date !== today || Boolean(schedule.start_time));
 
-  // Completed records never change, and still occupy their original slots.
   for (const b of schedule.blocks) if (b.done) reserve(b.date, starts[b.id] ?? beginning, b.minutes);
   const pending: Block[] = [];
   for (const b of schedule.blocks) {
     if (b.done) continue;
     const start = starts[b.id] ?? beginning;
-    if (availableDay(b.date) && start >= lowerBound(b.date) && start + b.minutes <= end && !overlaps(b.date, start, b.minutes))
-      reserve(b.date, start, b.minutes);
+    // Blocks already on today or later stay put: today's tasks remain studyable all day.
+    if (b.date >= today && !overlaps(b.date, start, b.minutes)) reserve(b.date, start, b.minutes);
     else pending.push(b);
   }
   const priority = new Map(schedule.subjects.map((s) => [s.subject_id, s.priority]));
   pending.sort((a, b) => (priority.get(b.subject_id) ?? 0) - (priority.get(a.subject_id) ?? 0) || a.date.localeCompare(b.date));
   const changes = new Map<string, Block>();
   let left = 0;
-  for (const b of pending) {
-    // An indivisible task larger than the entire window cannot fit in any week.
-    if (!schedule.days.length || b.minutes > end - beginning || b.minutes <= 0) { left++; continue; }
-    const cursor = parse(today);
-    for (;;) {
-      const date = day(cursor);
-      if (availableDay(date)) {
-        let start = lowerBound(date);
-        for (const [a, z] of occupied.get(date) ?? []) {
-          if (z <= start) continue;
-          if (start + b.minutes <= a) break;
-          start = Math.max(start, z);
-        }
-        if (start + b.minutes <= end) {
+  const lastEnd = (date: string) => Math.max(lowerBound(date), ...(occupied.get(date) ?? []).map(([, z]) => z));
+
+  if (mode === 'extra') {
+    const days: string[] = [];
+    const c = parse(today);
+    for (let i = 0; i < 14 && days.length < 7; i++) {
+      const d = day(c);
+      if (studyDay(d) && (d !== today || schedule.start_time)) days.push(d);
+      c.setDate(c.getDate() + 1);
+    }
+    let i = 0;
+    for (const b of pending) {
+      let placed = false;
+      for (let k = 0; k < days.length && !placed; k++) {
+        const date = days[(i + k) % days.length]!;
+        const start = lastEnd(date);
+        if (start + b.minutes <= 1440) {
           changes.set(b.id, { ...b, date });
           starts[b.id] = start;
           reserve(date, start, b.minutes);
-          break;
+          i = (i + k + 1) % days.length;
+          placed = true;
         }
       }
-      cursor.setDate(cursor.getDate() + 1);
+      if (!placed) left++;
+    }
+  } else {
+    for (const b of pending) {
+      if (!schedule.days.length || b.minutes > end - beginning || b.minutes <= 0) { left++; continue; }
+      const cursor = parse(today);
+      for (;;) {
+        const date = day(cursor);
+        if (availableDay(date)) {
+          let start = lowerBound(date);
+          for (const [a, z] of occupied.get(date) ?? []) {
+            if (z <= start) continue;
+            if (start + b.minutes <= a) break;
+            start = Math.max(start, z);
+          }
+          if (start + b.minutes <= end) {
+            changes.set(b.id, { ...b, date });
+            starts[b.id] = start;
+            reserve(date, start, b.minutes);
+            break;
+          }
+        }
+        cursor.setDate(cursor.getDate() + 1);
+      }
     }
   }
-  return { blocks: schedule.blocks.map((b) => changes.get(b.id) ?? b), start_minutes: changes.size ? starts : schedule.start_minutes, moved: changes.size, left };
+  return { blocks: schedule.blocks.map((b) => changes.get(b.id) ?? b), start_minutes: changes.size ? starts : schedule.start_minutes, moved: changes.size, left, pending: pending.length };
 }
 
 /** Real studied seconds for a subject on a date, from timer sessions (never duplicated). */
