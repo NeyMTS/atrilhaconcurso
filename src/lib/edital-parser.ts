@@ -17,7 +17,7 @@ export function splitTopics(text: string): DraftTopic[] {
   NUMBERED_RE.lastIndex = 0;
   let expectedTop = 1;
   while ((m = NUMBERED_RE.exec(text))) {
-    const num = m[1];
+    const num = m[1] ?? '';
     const top = Number(num.split('.')[0]);
     // accept only the next top-level number to avoid splitting on "Lei 8 112" etc.
     if (!num.includes('.')) {
@@ -32,7 +32,7 @@ export function splitTopics(text: string): DraftTopic[] {
   const roots: DraftTopic[] = [];
   const byNum = new Map<string, DraftTopic>();
   marks.forEach((mk, i) => {
-    const body = clean(text.slice(mk.start, i + 1 < marks.length ? marks[i + 1].end : undefined));
+    const body = clean(text.slice(mk.start, i + 1 < marks.length ? marks[i + 1]!.end : undefined));
     if (!body) return;
     const node: DraftTopic = { name: `${mk.num} ${body}`, children: [] };
     byNum.set(mk.num, node);
@@ -72,9 +72,9 @@ export function parseEdital(raw: string): DraftEdital {
   };
   for (const line of lines) {
     const sm = SUBJECT_RE.exec(line);
-    if (sm && !/^\d/.test(line) && sm[1].replace(/[^A-ZÁÉÍÓÚÂÊÔÃÕÇ]/g, '').length >= 4) {
+    if (sm && !/^\d/.test(line) && (sm[1] ?? '').replace(/[^A-ZÁÉÍÓÚÂÊÔÃÕÇ]/g, '').length >= 4) {
       flush();
-      current = { name: titleCase(clean(sm[1])), buf: [sm[2]] };
+      current = { name: titleCase(clean(sm[1] ?? '')), buf: [sm[2] ?? ''] };
     } else if (current) current.buf.push(line);
   }
   flush();
