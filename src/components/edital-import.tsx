@@ -92,7 +92,7 @@ export function EditalImport() {
     <>
       <Button variant="outline" onClick={() => (user ? setOpen(true) : void login())}><FileUp /> Importar edital</Button>
       {open && (
-        <Modal title="Importar edital (PDF)" onClose={() => !busy && setOpen(false)}>
+        <Modal title="Importar edital (PDF)" close={() => !busy && setOpen(false)}>
           {!draft && (
             <div className="import-pick">
               <p className="form-note">O PDF é lido no seu aparelho. Você revisa tudo antes de salvar.</p>

@@ -33,6 +33,8 @@ import { Button } from '@/components/ui/button';
 import { useStudies } from './study-provider';
 import { Field, ItemForm, Modal } from './study-forms';
 import { catalog } from '@/lib/catalog';
+import { EditalImport } from './edital-import';
+import { StudySummary } from './study-summary';
 import {
   day,
   elapsed,
@@ -1653,6 +1655,7 @@ export function EditalView() {
           <Plus />
           Novo concurso
         </Button>
+        <EditalImport />
       </Title>
 
       {!contests.length && (
@@ -2507,6 +2510,8 @@ export function EvolutionView() {
         title="Evolução com dados reais."
         subtitle="Tempo, questões e desempenho. Cada indicador no seu lugar."
       />
+
+      <StudySummary contestId={cid} />
 
       <div className="filters">
         <Field label="Concurso">
