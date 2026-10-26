@@ -14,9 +14,9 @@ describe('importação de edital', () => {
     expect(d.agency).toBe('Polícia Federal');
     expect(d.board).toBe('Cebraspe');
     expect(d.subjects.map(s => s.name)).toEqual(['Língua Portuguesa', 'Direito Constitucional']);
-    const lp = d.subjects[0].topics;
+    const lp = d.subjects[0]!.topics;
     expect(lp).toHaveLength(3);
-    expect(lp[1].children[0].name).toBe('2.1 Acentuação gráfica');
+    expect(lp[1]!.children[0]!.name).toBe('2.1 Acentuação gráfica');
   });
   it('não quebra números que não seguem a sequência', () => {
     expect(splitTopics('1 Lei 8 112 de 1990. 2 Ética.').map(t => t.name)).toEqual(['1 Lei 8 112 de 1990', '2 Ética']);
@@ -24,7 +24,7 @@ describe('importação de edital', () => {
   it('remove disciplinas e tópicos duplicados', () => {
     const r = dedupeSubjects([{ name: 'Ética', topics: [{ name: '1 A', children: [] }] }, { name: 'ÉTICA', topics: [{ name: '1 a', children: [] }, { name: '2 B', children: [] }] }]);
     expect(r).toHaveLength(1);
-    expect(r[0].topics.map(t => t.name)).toEqual(['1 A', '2 B']);
+    expect(r[0]!.topics.map(t => t.name)).toEqual(['1 A', '2 B']);
   });
   it('PDF sem conteúdo programático não gera disciplinas', () => {
     expect(parseEdital('texto qualquer sem estrutura').subjects).toEqual([]);

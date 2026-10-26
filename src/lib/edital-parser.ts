@@ -5,7 +5,7 @@ export type DraftTopic = { name: string; children: DraftTopic[] };
 export type DraftSubject = { name: string; topics: DraftTopic[] };
 export type DraftEdital = { name: string; agency: string; role: string; board: string; year: number | null; subjects: DraftSubject[] };
 
-const clean = (s: string) => s.replace(/\s+/g, ' ').replace(/^[\s.;:,–-]+|[\s;,–-]+$/g, '').trim();
+const clean = (s: string) => s.replace(/\s+/g, ' ').replace(/^[\s.;:,–-]+|[\s.;,–-]+$/g, '').trim();
 
 const SUBJECT_RE = /^([A-ZÁÉÍÓÚÂÊÔÃÕÇÀÜ][A-ZÁÉÍÓÚÂÊÔÃÕÇÀÜ0-9 ,.\-–()/ºª]{3,120}):\s*(.*)$/;
 const NUMBERED_RE = /(?:^|\s)(\d{1,2}(?:\.\d{1,2}){0,3})\.?\s+(?=[A-ZÁÉÍÓÚÂÊÔÃÕÇa-záéíóúâêôãõç])/g;

@@ -48,7 +48,7 @@ export function buildSummary(items: Item[], sessions: Session[], contestId = '',
   const overdue = reviews.filter((r) => r.payload.date < today).length;
 
   const schedule = items.find((i) => i.kind === 'schedule' && (!contestId || i.payload.contest_id === contestId));
-  const next = ((schedule?.payload.blocks || []) as Block[])
+  const next = ((schedule?.payload['blocks'] || []) as Block[])
     .filter((b) => !b.done && b.date >= today)
     .sort((a, b) => a.date.localeCompare(b.date))[0];
   const nextSubject = next ? subjects.find((s) => s.id === next.subject_id)?.payload.name : undefined;
