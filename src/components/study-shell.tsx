@@ -20,7 +20,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { useStudies } from './study-provider';
 import { AccountDialog } from './study-views';
-import appIcon from '@/assets/atrilha-icon.png.asset.json';
+import appIcon from '@/assets/atrilha-app-icon.png.asset.json';
+import appLogo from '@/assets/atrilha-logo.png.asset.json';
 
 const nav = [
   { to: '/', label: 'Início', icon: House },
@@ -77,14 +78,9 @@ export function StudyShell({
         <Link
           to="/"
           className="brand"
-          aria-label="AtrilhaConcurso — página inicial"
+          aria-label="A Trilha Concursos — página inicial"
         >
-          <img className="brand-mark app-brand-icon" src={appIcon.url} alt="" />
-
-          <span className="brand-copy">
-            <strong>AtrilhaConcurso</strong>
-            <small>PLANEJE. ESTUDE. EVOLUA.</small>
-          </span>
+          <img className="brand-logo" src={appLogo.url} alt="A Trilha Concursos" />
         </Link>
 
         <div className="workspace-label">
@@ -176,7 +172,7 @@ export function StudyShell({
         <header className="topbar">
           <Link to="/" className="mobile-brand">
             <img className="brand-mark app-brand-icon" src={appIcon.url} alt="" />
-            <strong>AtrilhaConcurso</strong>
+            <strong>A Trilha Concursos</strong>
           </Link>
 
           <div className="breadcrumb" aria-label="Localização atual">
@@ -289,7 +285,7 @@ export function StudyShell({
 
         <footer className="page-footer">
           <span>
-            <strong>AtrilhaConcurso</strong>
+            <strong>A Trilha Concursos</strong>
             <span className="footer-dot">·</span>
             Consistência constrói resultados.
           </span>
