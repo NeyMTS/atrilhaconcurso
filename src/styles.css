@@ -1594,3 +1594,171 @@ h1 {
   .schedule-block > a { margin-left: 38px; }
   .bottom-nav a { font-size: 9px; }
 }
+/* =====================================
+   A TRILHA CONCURSOS — IDENTIDADE VISUAL
+   ===================================== */
+
+/* Títulos fortes e compactos */
+h1,
+.page-heading h1 {
+  font-family: "Roboto Condensed", "Arial Narrow", Impact, sans-serif;
+  font-weight: 900;
+  letter-spacing: -0.8px;
+  line-height: 1.08;
+}
+
+.page-heading h1 {
+  text-transform: uppercase;
+  text-decoration-color: var(--primary);
+  text-decoration-thickness: 4px;
+}
+
+.section-heading h2 {
+  font-weight: 800;
+  letter-spacing: -0.4px;
+}
+
+/* Faixa de destaque nos títulos de página */
+.eyebrow {
+  display: inline-block;
+  padding: 4px 10px;
+  background: var(--primary);
+  color: #171713;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  transform: skew(-4deg);
+}
+
+/* Cartões com acabamento editorial */
+.metric-card,
+.contest-card,
+.catalog-card,
+.chart-panel,
+.weekly-summary,
+.timer-section {
+  border-radius: 12px;
+  border-color: var(--border);
+  box-shadow: var(--shadow-card);
+}
+
+.metric-card::before {
+  height: 4px;
+  background: var(--primary);
+}
+
+.metric-card > strong {
+  font-weight: 850;
+  letter-spacing: -0.7px;
+}
+
+/* Painel principal */
+.welcome-band {
+  position: relative;
+  overflow: hidden;
+  border-left: 5px solid var(--primary);
+  border-radius: 12px;
+  background: var(--card);
+}
+
+.welcome-band h2 {
+  font-weight: 850;
+  letter-spacing: -0.7px;
+}
+
+/* Botões principais em laranja */
+.start-button {
+  background: var(--primary);
+  color: #171713;
+  border: 1px solid var(--primary);
+  border-radius: 9px;
+  font-weight: 800;
+}
+
+.start-button:hover {
+  background: #E85D08;
+  border-color: #E85D08;
+  color: #171713;
+  transform: translateY(-2px);
+}
+
+/* Campos */
+.field input,
+.field select,
+.field textarea,
+.search-input {
+  border-radius: 9px;
+}
+
+/* Navegação escura com destaque laranja */
+.sidebar {
+  background: #171713;
+  color: #F2EADF;
+  border-right-color: #393129;
+  box-shadow: none;
+}
+
+.sidebar nav .nav-item {
+  border-radius: 8px;
+}
+
+.sidebar .nav-active,
+.sidebar .nav-active:hover {
+  background: #FF7014;
+  color: #171713;
+  box-shadow: none;
+  font-weight: 800;
+}
+
+/* Cronograma */
+.schedule-day,
+.schedule-block,
+.schedule-setup {
+  border-radius: 10px;
+}
+
+.schedule-day.active {
+  background: var(--primary);
+  color: #171713;
+  border-color: var(--primary);
+  font-weight: 800;
+}
+
+.schedule-check {
+  border-color: var(--primary);
+}
+
+.schedule-block {
+  border-left: 3px solid var(--primary);
+}
+
+/* Cronômetro escuro */
+.timer-display {
+  background: #171713;
+  color: #F2EADF;
+  border: 1px solid #393129;
+  border-radius: 12px;
+}
+
+/* Barra inferior do celular */
+@media (max-width: 800px) {
+  .bottom-nav {
+    background: #171713;
+    border-top: 1px solid #393129;
+  }
+
+  .bottom-nav a {
+    color: #D9D0C1;
+    border-radius: 8px;
+  }
+
+  .bottom-nav .active {
+    background: #FF7014;
+    color: #171713;
+    font-weight: 800;
+  }
+
+  .page-heading h1 {
+    font-size: 28px;
+  }
+}
