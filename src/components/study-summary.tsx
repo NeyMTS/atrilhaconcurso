@@ -17,7 +17,7 @@ export function StudySummary({ contestId }: { contestId: string }) {
       <article className="summary-card">
         <span className="summary-q">Quanto estudei?</span>
         <strong>{hours(s.todaySeconds)} <small>hoje</small></strong>
-        <div className="progress-track"><div className="progress-fill" style={{ width: `${bar(s.todaySeconds / 3600, s.dailyGoal)}%` }} /></div>
+        <div className="progress-track"><span style={{ width: `${bar(s.todaySeconds / 3600, s.dailyGoal)}%` }} /></div>
         <small>{hours(s.weekSeconds)} nos últimos 7 dias{s.weeklyGoal ? ` · meta ${s.weeklyGoal} h` : ' · sem meta definida'}</small>
       </article>
       <article className="summary-card">
