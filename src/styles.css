@@ -45,63 +45,61 @@
 }
 
 :root {
-  --radius: 0.5rem;
-  --background: oklch(0.99 0.003 255);
-  --foreground: oklch(0.25 0.065 265);
-  --card: oklch(1 0 0);
-  --card-foreground: var(--foreground);
-  --popover: var(--card);
-  --popover-foreground: var(--foreground);
-  --primary: oklch(0.53 0.23 260);
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.95 0.024 255);
-  --secondary-foreground: oklch(0.4 0.12 260);
-  --muted: oklch(0.97 0.01 255);
-  --muted-foreground: oklch(0.49 0.035 260);
-  --accent: oklch(0.94 0.035 255);
-  --accent-foreground: var(--primary);
-  --border: oklch(0.93 0.012 255);
-  --input: oklch(0.88 0.02 255);
-  --ring: var(--primary);
-  --sidebar: var(--card);
-  --sidebar-foreground: var(--foreground);
-  --sidebar-primary: var(--primary);
-  --sidebar-primary-foreground: var(--primary-foreground);
-  --sidebar-accent: var(--accent);
-  --sidebar-accent-foreground: var(--accent-foreground);
-  --sidebar-border: var(--border);
-  --sidebar-ring: var(--ring);
-  --success: oklch(0.56 0.14 155);
-  --soft-green: var(--accent);
-  --welcome: oklch(0.96 0.024 245);
-  --chart-1: var(--primary);
-  --chart-2: oklch(0.66 0.14 240);
-  --chart-3: oklch(0.61 0.14 170);
-  --chart-4: oklch(0.72 0.15 65);
-  --chart-5: oklch(0.61 0.16 305);
-  --gradient-hero: linear-gradient(120deg, oklch(0.42 0.18 260), var(--primary));
-  --shadow-card: 0 2px 4px oklch(0.3 0.06 260 / 0.025), 0 8px 24px -12px oklch(0.4 0.12 260 / 0.12);
-  --shadow-floating: 0 16px 40px oklch(0.25 0.06 260 / 0.14);
-  --overlay: oklch(0.2 0.04 260 / 0.42);
-}
+  --radius: 0.65rem;
 
-.dark {
-  --background: oklch(0.19 0.025 260);
-  --foreground: oklch(0.96 0.01 255);
-  --card: oklch(0.23 0.03 260);
-  --primary: oklch(0.72 0.14 255);
-  --primary-foreground: oklch(0.18 0.03 260);
-  --secondary: oklch(0.29 0.04 260);
-  --secondary-foreground: var(--foreground);
-  --muted: oklch(0.27 0.025 260);
-  --muted-foreground: oklch(0.75 0.025 255);
-  --accent: oklch(0.3 0.06 255);
-  --border: oklch(0.34 0.025 260);
-  --input: var(--border);
-  --welcome: var(--accent);
-  --chart-1: var(--primary);
-  --gradient-hero: linear-gradient(120deg, var(--secondary), var(--accent));
-  --shadow-card: 0 8px 24px -12px oklch(0 0 0 / 0.5);
+  /* Identidade A Trilha Concursos */
+  --background: #F2EADF;
+  --foreground: #171713;
+  --card: #FFF9EF;
+  --card-foreground: #171713;
+  --popover: #FFF9EF;
+  --popover-foreground: #171713;
+
+  /* Laranja principal */
+  --primary: #FF7014;
+  --primary-foreground: #171713;
+
+  /* Superfícies secundárias */
+  --secondary: #D9D0C1;
+  --secondary-foreground: #171713;
+  --muted: #EAE0D2;
+  --muted-foreground: #62594E;
+  --accent: #FFE0C7;
+  --accent-foreground: #171713;
+
+  /* Bordas e campos */
+  --border: #D9D0C1;
+  --input: #C9BBA9;
+  --ring: #FF7014;
+
+  /* Navegação */
+  --sidebar: #171713;
+  --sidebar-foreground: #F2EADF;
+  --sidebar-primary: #FF7014;
+  --sidebar-primary-foreground: #171713;
+  --sidebar-accent: #30271F;
+  --sidebar-accent-foreground: #FF7014;
+  --sidebar-border: #393129;
+  --sidebar-ring: #FF7014;
+
+  /* Indicadores */
+  --success: #18875A;
+  --soft-green: #E0EDE2;
+  --welcome: #E9DCCB;
+
+  /* Gráficos */
+  --chart-1: #FF7014;
+  --chart-2: #2468B4;
+  --chart-3: #18875A;
+  --chart-4: #D9A441;
+  --chart-5: #8A5AB5;
+
+  /* Efeitos */
+  --gradient-hero: linear-gradient(135deg, #171713, #30271F);
+  --shadow-card: 0 2px 5px rgba(23, 23, 19, 0.06),
+    0 8px 22px rgba(23, 23, 19, 0.07);
+  --shadow-floating: 0 16px 40px rgba(23, 23, 19, 0.20);
+  --overlay: rgba(23, 23, 19, 0.58);
 }
 
 @layer base {
