@@ -19,11 +19,11 @@ export function splitTopics(text: string): DraftTopic[] {
   while ((m = NUMBERED_RE.exec(text))) {
     const num = m[1];
     const top = Number(num.split('.')[0]);
-    // accept only plausible sequence numbers to avoid splitting on "Lei 8 112" etc.
-    if (!num.includes('.') && top !== expectedTop && top !== expectedTop - 1 + 1) {
+    // accept only the next top-level number to avoid splitting on "Lei 8 112" etc.
+    if (!num.includes('.')) {
       if (top !== expectedTop) continue;
-    }
-    if (!num.includes('.')) expectedTop = top + 1;
+      expectedTop = top + 1;
+    } else if (top !== expectedTop - 1) continue;
     marks.push({ num, start: m.index + m[0].length, end: m.index + (m[0].startsWith(' ') ? 1 : 0) });
   }
   if (!marks.length) {
