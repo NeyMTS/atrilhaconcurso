@@ -171,8 +171,7 @@ export function StudyShell({
       <div className="main-shell">
         <header className="topbar">
           <Link to="/" className="mobile-brand">
-            <img className="brand-mark app-brand-icon" src={appIcon.url} alt="" />
-            <strong>A Trilha Concursos</strong>
+            <img src={appLogo.url} alt="A Trilha Concursos" style={{ height: 44, width: 'auto', borderRadius: 6 }} />
           </Link>
 
           <div className="breadcrumb" aria-label="Localização atual">
