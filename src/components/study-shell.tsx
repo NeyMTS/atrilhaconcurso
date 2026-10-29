@@ -20,7 +20,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { useStudies } from './study-provider';
 import { AccountDialog } from './study-views';
-import appIcon from '@/assets/atrilha-app-icon.png.asset.json';
 import appLogo from '@/assets/atrilha-logo.png.asset.json';
 
 const nav = [
@@ -171,8 +170,7 @@ export function StudyShell({
       <div className="main-shell">
         <header className="topbar">
           <Link to="/" className="mobile-brand">
-            <img className="brand-mark app-brand-icon" src={appIcon.url} alt="" />
-            <strong>A Trilha Concursos</strong>
+            <img src={appLogo.url} alt="A Trilha Concursos" style={{ height: 44, width: 'auto', borderRadius: 6 }} />
           </Link>
 
           <div className="breadcrumb" aria-label="Localização atual">
