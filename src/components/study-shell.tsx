@@ -20,7 +20,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { useStudies } from './study-provider';
 import { AccountDialog } from './study-views';
-import appIcon from '@/assets/atrilha-app-icon.png.asset.json';
 import appLogo from '@/assets/atrilha-logo.png.asset.json';
 
 const nav = [
